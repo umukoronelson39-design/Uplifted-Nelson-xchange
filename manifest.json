@@ -1,7 +1,7 @@
 {
   "name": "Uplifted Nelson Xchange",
   "short_name": "UN Xchange",
-  "start_url": "index.html",
+  "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0a66c2",

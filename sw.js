@@ -1,18 +1,49 @@
-const cacheName = "uplifted-nelson-cache-v1";
-const filesToCache = ["/", "/index.html", "/manifest.json"];
+const CACHE_NAME = 'uplifted-nelson-cache-v1';
+const urlsToCache = [
+  './',
+  './index.html',
+  './manifest.json',
+  // Add your icons here if used, example:
+  './icons/icon-192.png',
+  './icons/icon-512.png'
+];
 
-self.addEventListener("install", (event) => {
+self.addEventListener('install', event => {
+  // Perform install steps
   event.waitUntil(
-    caches.open(cacheName).then((cache) => {
-      return cache.addAll(filesToCache);
-    })
+    caches.open(CACHE_NAME)
+      .then(cache => {
+        console.log('Opened cache');
+        return cache.addAll(urlsToCache);
+      })
   );
 });
 
-self.addEventListener("fetch", (event) => {
+self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
-    })
+    caches.match(event.request)
+      .then(response => {
+        // Cache hit - return response
+        if (response) {
+          return response;
+        }
+        return fetch(event.request);
+      }
+    )
+  );
+});
+
+self.addEventListener('activate', event => {
+  const cacheWhitelist = [CACHE_NAME];
+  event.waitUntil(
+    caches.keys().then(cacheNames => 
+      Promise.all(
+        cacheNames.map(cacheName => {
+          if (!cacheWhitelist.includes(cacheName)) {
+            return caches.delete(cacheName);
+          }
+        })
+      )
+    )
   );
 });

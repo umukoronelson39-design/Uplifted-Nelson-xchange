@@ -12,7 +12,6 @@
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    integrity="sha512-papbBv5Pth9i3+0dsmzvW+SjKpCyXfYmDli8MtyCy6AxVtIR2FZ6dQ35y1Cx6w3XFxJSmLZUOTxwC1fZjYTOUg=="
     crossorigin="anonymous"
     referrerpolicy="no-referrer"
   />
@@ -508,10 +507,17 @@
   </div>
 
   <script>
-    // Your custom credentials:
+    // Your custom credentials
     const VALID_USERNAME = "Upliftednel";
     const VALID_PASSWORD = "Nelson@24$";
 
     // Elements
     const loginSection = document.getElementById("loginSection");
-   
+    const appSection = document.getElementById("appSection");
+    const loginBtn = document.getElementById("loginBtn");
+    const loginError = document.getElementById("loginError");
+    const usernameInput = document.getElementById("username");
+    const passwordInput = document.getElementById("password");
+
+    const usernameError = document.getElementById("usernameError");
+    const passwordError = document.getElement

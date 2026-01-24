@@ -16,399 +16,122 @@
     referrerpolicy="no-referrer"
   />
 
-  <!-- PWA manifest -->
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#2575fc" />
-
   <style>
-    /* Reset & base */
-    * {
-      box-sizing: border-box;
-    }
+    /* Basic styling */
     body {
-      margin: 0;
-      font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Poppins', sans-serif;
       background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+      color: #222;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
-      padding: 20px;
-      color: #333;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      transition: background 0.4s ease, color 0.4s ease;
-    }
-    body.dark-mode {
-      background: #121212;
-      color: #eee;
     }
     #container {
       background: white;
-      border-radius: 16px;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
       width: 100%;
       max-width: 480px;
       padding: 40px 50px;
       box-sizing: border-box;
-      transition: background 0.4s ease, color 0.4s ease;
     }
-    body.dark-mode #container {
-      background: #1e1e1e;
-      color: #eee;
-      box-shadow: 0 8px 30px rgba(255,255,255,0.1);
-    }
-    #loginSection {
-      display: block;
-    }
-    #loginSection h2 {
-      margin-bottom: 28px;
+    h2 {
       color: #2575fc;
-      text-align: center;
+      margin-bottom: 30px;
       font-weight: 700;
+      text-align: center;
       font-size: 32px;
-      letter-spacing: 1.2px;
     }
-    body.dark-mode #loginSection h2 {
-      color: #90caf9;
-    }
-    .inputGroup {
-      margin-bottom: 20px;
-      position: relative;
-    }
-    input[type="text"],
-    input[type="password"],
-    select,
-    textarea {
+    input[type="text"], input[type="password"], select, textarea {
       width: 100%;
-      padding: 15px 20px;
-      border-radius: 12px;
-      border: 1.8px solid #ddd;
+      padding: 15px 18px;
+      margin-bottom: 18px;
+      border: 2px solid #ddd;
+      border-radius: 10px;
       font-size: 17px;
-      transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
       font-weight: 600;
       color: #222;
+      box-sizing: border-box;
       font-family: 'Poppins', sans-serif;
+      transition: border-color 0.3s ease;
     }
-    input[type="text"]:focus,
-    input[type="password"]:focus,
-    select:focus,
-    textarea:focus {
-      outline: none;
+    input[type="text"]:focus, input[type="password"]:focus, select:focus, textarea:focus {
       border-color: #2575fc;
-      box-shadow: 0 0 14px rgba(37,117,252,0.5);
-    }
-    body.dark-mode input[type="text"],
-    body.dark-mode input[type="password"],
-    body.dark-mode select,
-    body.dark-mode textarea {
-      background-color: #2a2a2a;
-      border-color: #555;
-      color: #eee;
-    }
-    body.dark-mode input[type="text"]:focus,
-    body.dark-mode input[type="password"]:focus,
-    body.dark-mode select:focus,
-    body.dark-mode textarea:focus {
-      border-color: #90caf9;
-      box-shadow: 0 0 14px rgba(144,202,249,0.8);
+      outline: none;
+      box-shadow: 0 0 12px rgba(37,117,252,0.5);
     }
     button {
       width: 100%;
-      background: #2575fc;
+      background-color: #2575fc;
       border: none;
-      padding: 18px;
       color: white;
+      padding: 18px;
       font-size: 22px;
       font-weight: 700;
       border-radius: 14px;
       cursor: pointer;
-      transition: background 0.4s ease, box-shadow 0.3s ease;
-      margin-top: 12px;
-      letter-spacing: 1.3px;
-      font-family: 'Poppins', sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
+      letter-spacing: 1.2px;
+      transition: background-color 0.3s ease;
     }
     button:hover {
-      background: #185bd8;
-      box-shadow: 0 4px 15px rgba(24, 91, 216, 0.6);
-    }
-    button:disabled {
-      background: #999;
-      cursor: not-allowed;
-      box-shadow: none;
+      background-color: #185bd8;
     }
     #loginError {
       color: #e63946;
+      font-weight: 700;
+      margin-top: 15px;
       text-align: center;
-      margin-top: 14px;
       display: none;
-      font-weight: 600;
-      letter-spacing: 0.6px;
-      font-size: 15px;
-    }
-    body.dark-mode #loginError {
-      color: #ff6b6b;
     }
     #appSection {
       display: none;
-      color: #222;
     }
-    body.dark-mode #appSection {
-      color: #eee;
-    }
-    #appHeader {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 32px;
-    }
-    #appHeader h2 {
+    #logoutBtn {
+      background-color: transparent;
+      border: 2px solid #2575fc;
       color: #2575fc;
-      font-size: 34px;
-      font-weight: 700;
-      letter-spacing: 1.3px;
-      margin: 0;
-    }
-    body.dark-mode #appHeader h2 {
-      color: #90caf9;
-    }
-    #appHeader .profile {
-      display: flex;
-      align-items: center;
-      gap: 12px;
+      padding: 8px 20px;
       font-weight: 600;
-      font-size: 16px;
-      color: #555;
-    }
-    body.dark-mode #appHeader .profile {
-      color: #bbb;
-    }
-    #appHeader .profile span {
-      user-select: none;
-    }
-    #appHeader .logoutBtn {
-      background: transparent;
-      color: #2575fc;
-      font-weight: 700;
-      border: none;
+      border-radius: 12px;
       cursor: pointer;
-      font-size: 16px;
-      padding: 6px 12px;
-      border-radius: 8px;
-      transition: background 0.3s ease;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      float: right;
+      margin-top: -55px;
+      margin-bottom: 20px;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
-    #appHeader .logoutBtn:hover {
-      background: #185bd8;
+    #logoutBtn:hover {
+      background-color: #2575fc;
       color: white;
     }
     #writeUp {
-      background: #f7f9ff;
-      border-radius: 14px;
-      padding: 22px 26px;
       margin-bottom: 30px;
       font-size: 17px;
-      color: #444;
-      box-shadow: 0 4px 14px rgba(37,117,252,0.15);
+      font-weight: 500;
       line-height: 1.6;
-      font-weight: 400;
-      letter-spacing: 0.2px;
-      transition: background 0.4s ease, color 0.4s ease;
-    }
-    body.dark-mode #writeUp {
-      background: #272727;
-      color: #ddd;
-      box-shadow: 0 4px 14px rgba(144,202,249,0.25);
-    }
-    .card {
-      background: #ffffff;
-      padding: 26px 30px;
-      border-radius: 16px;
-      box-shadow: 0 5px 18px rgba(37,117,252,0.12);
-      margin-bottom: 30px;
-      font-weight: 600;
-      font-family: 'Poppins', sans-serif;
-      transition: background 0.4s ease, color 0.4s ease, box-shadow 0.4s ease;
-    }
-    body.dark-mode .card {
-      background: #1e1e1e;
-      color: #eee;
-      box-shadow: 0 5px 18px rgba(144,202,249,0.25);
-    }
-    .card h3 {
-      margin-top: 0;
-      color: #2575fc;
-      margin-bottom: 22px;
-      font-weight: 700;
-      font-size: 24px;
-      letter-spacing: 0.9px;
-    }
-    body.dark-mode .card h3 {
-      color: #90caf9;
+      color: #444;
     }
     label {
+      font-weight: 600;
+      margin-bottom: 8px;
       display: block;
-      margin-bottom: 10px;
-      color: #333;
-      font-weight: 600;
-      font-size: 16px;
-      letter-spacing: 0.2px;
-    }
-    body.dark-mode label {
-      color: #ddd;
-    }
-    textarea {
-      resize: vertical;
-      min-height: 80px;
-      font-weight: 500;
-      font-size: 16px;
-    }
-    input, select, textarea {
-      font-size: 16px;
-      font-weight: 600;
-      color: #222;
-    }
-    body.dark-mode input, 
-    body.dark-mode select,
-    body.dark-mode textarea {
-      color: #eee;
     }
     #supportSection {
-      text-align: center;
-      margin-top: 20px;
+      margin-top: 30px;
       font-size: 15px;
-      color: #555;
-      font-weight: 500;
-      letter-spacing: 0.3px;
-    }
-    body.dark-mode #supportSection {
-      color: #bbb;
+      text-align: center;
     }
     #supportSection a {
       color: #2575fc;
-      text-decoration: none;
       font-weight: 700;
-      transition: color 0.3s;
+      text-decoration: none;
     }
     #supportSection a:hover {
-      color: #185bd8;
       text-decoration: underline;
-    }
-    #result {
-      margin-top: 18px;
-      font-weight: 700;
-      color: #2575fc;
-      font-size: 20px;
-      letter-spacing: 0.5px;
-    }
-    body.dark-mode #result {
-      color: #90caf9;
-    }
-    /* Responsive */
-    @media (max-width: 520px) {
-      #container {
-        padding: 30px 25px;
-        max-width: 100%;
-      }
-      #appHeader {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-      }
-    }
-    /* Error message inline for form */
-    .error-msg {
-      color: #e63946;
-      font-size: 14px;
-      margin-top: 6px;
-      display: none;
-    }
-    body.dark-mode .error-msg {
-      color: #ff6b6b;
-    }
-    /* Loading spinner */
-    .spinner {
-      border: 4px solid rgba(37,117,252,0.2);
-      border-top: 4px solid #2575fc;
-      border-radius: 50%;
-      width: 22px;
-      height: 22px;
-      animation: spin 1s linear infinite;
-      margin-left: 10px;
-    }
-    body.dark-mode .spinner {
-      border: 4px solid rgba(144,202,249,0.2);
-      border-top: 4px solid #90caf9;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg);}
-      100% { transform: rotate(360deg);}
-    }
-    /* Trade History Table */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      font-size: 15px;
-    }
-    th, td {
-      padding: 12px 15px;
-      border-bottom: 1px solid #ddd;
-      text-align: left;
-    }
-    th {
-      background-color: #2575fc;
-      color: white;
-      font-weight: 700;
-    }
-    body.dark-mode th {
-      background-color: #90caf9;
-      color: #222;
-    }
-    body.dark-mode td {
-      border-bottom: 1px solid #444;
-    }
-    /* Dark mode toggle switch */
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 52px;
-      height: 28px;
-      margin-left: 10px;
-    }
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-color: #ccc;
-      transition: 0.4s;
-      border-radius: 28px;
-    }
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 20px; width: 20px;
-      left: 4px; bottom: 4px;
-      background-color: white;
-      transition: 0.4s;
-      border-radius: 50%;
-    }
-    input:checked + .slider {
-      background-color: #2575fc;
-    }
-    input:checked + .slider:before {
-      transform: translateX(24px);
     }
   </style>
 </head>
@@ -416,48 +139,26 @@
 
   <div id="container">
 
-    <!-- Login Screen -->
+    <!-- Login Section -->
     <section id="loginSection">
       <h2><i class="fa-solid fa-lock"></i> Login to Uplifted Nelson Xchange</h2>
-      <div class="inputGroup">
-        <input type="text" id="username" placeholder="Username" autocomplete="username" />
-        <div id="usernameError" class="error-msg">Please enter username</div>
-      </div>
-      <div class="inputGroup">
-        <input type="password" id="password" placeholder="Password" autocomplete="current-password" />
-        <div id="passwordError" class="error-msg">Please enter password</div>
-      </div>
+      <input type="text" id="username" placeholder="Username" autocomplete="username" />
+      <input type="password" id="password" placeholder="Password" autocomplete="current-password" />
       <button id="loginBtn"><i class="fa-solid fa-right-to-bracket"></i> Log In</button>
       <p id="loginError">Invalid username or password</p>
     </section>
 
-    <!-- Main App Content -->
+    <!-- App Section -->
     <section id="appSection">
-      <div id="appHeader">
-        <h2><i class="fa-solid fa-chart-line"></i> Uplifted Nelson Xchange</h2>
-        <div class="profile">
-          <span><i class="fa-solid fa-user"></i> Upliftednel</span>
-          <button id="logoutBtn" class="logoutBtn" title="Logout">
-            <i class="fa-solid fa-right-from-bracket"></i> Logout
-          </button>
-          <label class="switch" title="Toggle Dark Mode">
-            <input type="checkbox" id="darkModeToggle" />
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
+      <button id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
 
-      <p style="color:#555; font-size:16px; font-weight:500; letter-spacing:0.3px; margin-bottom: 25px;">
-        We buy and sell Bitcoins and Gift Cards
+      <h2><i class="fa-solid fa-chart-line"></i> Uplifted Nelson Xchange</h2>
+
+      <p id="writeUp">
+        Welcome to Uplifted Nelson Xchange — your trusted platform for buying and selling Bitcoins and Gift Cards of all kinds. Fast, secure, and reliable trading at your fingertips.
       </p>
 
-      <div id="writeUp">
-        Welcome to Uplifted Nelson Xchange — your trusted platform for buying and selling Bitcoin and gift cards of all kinds. Fast, secure, and reliable trading at your fingertips.
-      </div>
-
-      <div class="card">
-        <h3><i class="fa-solid fa-arrow-up-right-dots"></i> Submit Trade Request</h3>
-
+      <div>
         <label for="tradeType">Trade Type</label>
         <select id="tradeType">
           <option value="Bitcoin">Bitcoin</option>
@@ -466,37 +167,11 @@
 
         <label for="tradeAmount">Amount</label>
         <input type="number" id="tradeAmount" placeholder="Enter amount" min="0" step="any" />
-        <div id="tradeAmountError" class="error-msg">Please enter a valid amount</div>
 
         <label for="tradeDetails">Details</label>
         <textarea id="tradeDetails" placeholder="Gift card type or BTC wallet info"></textarea>
-        <div id="tradeDetailsError" class="error-msg">Please enter trade details</div>
 
         <button id="submitTradeBtn"><i class="fa-solid fa-paper-plane"></i> Submit Trade</button>
-      </div>
-
-      <div class="card">
-        <h3><i class="fa-solid fa-calculator"></i> Live Rate Calculator</h3>
-        <input type="number" id="calcAmount" placeholder="Enter amount" min="0" step="any" />
-        <button id="calculateBtn"><i class="fa-solid fa-equals"></i> Calculate</button>
-        <p id="result"></p>
-      </div>
-
-      <div class="card">
-        <h3><i class="fa-solid fa-clock-rotate-left"></i> Trade History</h3>
-        <table id="tradeHistoryTable" aria-label="Trade History">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Type</th>
-              <th>Amount</th>
-              <th>Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Filled dynamically -->
-          </tbody>
-        </table>
       </div>
 
       <div id="supportSection">
@@ -507,17 +182,40 @@
   </div>
 
   <script>
-    // Your custom credentials
     const VALID_USERNAME = "Upliftednel";
     const VALID_PASSWORD = "Nelson@24$";
 
-    // Elements
     const loginSection = document.getElementById("loginSection");
     const appSection = document.getElementById("appSection");
     const loginBtn = document.getElementById("loginBtn");
     const loginError = document.getElementById("loginError");
     const usernameInput = document.getElementById("username");
     const passwordInput = document.getElementById("password");
+    const logoutBtn = document.getElementById("logoutBtn");
 
-    const usernameError = document.getElementById("usernameError");
-    const passwordError = document.getElement
+    loginBtn.addEventListener("click", () => {
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value.trim();
+
+      if(username === VALID_USERNAME && password === VALID_PASSWORD) {
+        loginError.style.display = "none";
+        loginSection.style.display = "none";
+        appSection.style.display = "block";
+
+        // Clear inputs for next login
+        usernameInput.value = "";
+        passwordInput.value = "";
+      } else {
+        loginError.style.display = "block";
+      }
+    });
+
+    logoutBtn.addEventListener("click", () => {
+      appSection.style.display = "none";
+      loginSection.style.display = "block";
+      loginError.style.display = "none";
+    });
+  </script>
+
+</body>
+</html>

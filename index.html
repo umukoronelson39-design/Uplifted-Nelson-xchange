@@ -1,221 +1,236 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Trading App - Uplifted Nelson Xchange</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Uplifted Nelson Xchange</title>
 
-  <!-- Google Fonts: Poppins -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
-  <!-- FontAwesome CDN for icons -->
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer"
-  />
-
-  <style>
-    /* Basic styling */
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-      color: #222;
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-    #container {
-      background: white;
-      border-radius: 15px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-      width: 100%;
-      max-width: 480px;
-      padding: 40px 50px;
-      box-sizing: border-box;
-    }
-    h2 {
-      color: #2575fc;
-      margin-bottom: 30px;
-      font-weight: 700;
-      text-align: center;
-      font-size: 32px;
-    }
-    input[type="text"], input[type="password"], select, textarea {
-      width: 100%;
-      padding: 15px 18px;
-      margin-bottom: 18px;
-      border: 2px solid #ddd;
-      border-radius: 10px;
-      font-size: 17px;
-      font-weight: 600;
-      color: #222;
-      box-sizing: border-box;
-      font-family: 'Poppins', sans-serif;
-      transition: border-color 0.3s ease;
-    }
-    input[type="text"]:focus, input[type="password"]:focus, select:focus, textarea:focus {
-      border-color: #2575fc;
-      outline: none;
-      box-shadow: 0 0 12px rgba(37,117,252,0.5);
-    }
-    button {
-      width: 100%;
-      background-color: #2575fc;
-      border: none;
-      color: white;
-      padding: 18px;
-      font-size: 22px;
-      font-weight: 700;
-      border-radius: 14px;
-      cursor: pointer;
-      letter-spacing: 1.2px;
-      transition: background-color 0.3s ease;
-    }
-    button:hover {
-      background-color: #185bd8;
-    }
-    #loginError {
-      color: #e63946;
-      font-weight: 700;
-      margin-top: 15px;
-      text-align: center;
-      display: none;
-    }
-    #appSection {
-      display: none;
-    }
-    #logoutBtn {
-      background-color: transparent;
-      border: 2px solid #2575fc;
-      color: #2575fc;
-      padding: 8px 20px;
-      font-weight: 600;
-      border-radius: 12px;
-      cursor: pointer;
-      float: right;
-      margin-top: -55px;
-      margin-bottom: 20px;
-      transition: background-color 0.3s ease, color 0.3s ease;
-    }
-    #logoutBtn:hover {
-      background-color: #2575fc;
-      color: white;
-    }
-    #writeUp {
-      margin-bottom: 30px;
-      font-size: 17px;
-      font-weight: 500;
-      line-height: 1.6;
-      color: #444;
-    }
-    label {
-      font-weight: 600;
-      margin-bottom: 8px;
-      display: block;
-    }
-    #supportSection {
-      margin-top: 30px;
-      font-size: 15px;
-      text-align: center;
-    }
-    #supportSection a {
-      color: #2575fc;
-      font-weight: 700;
-      text-decoration: none;
-    }
-    #supportSection a:hover {
-      text-decoration: underline;
-    }
-  </style>
+<style>
+body{
+  font-family:Poppins, sans-serif;
+  background:linear-gradient(135deg,#6a11cb,#2575fc);
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+.container{
+  background:#fff;
+  width:100%;
+  max-width:520px;
+  padding:35px;
+  border-radius:18px;
+  box-shadow:0 10px 30px rgba(0,0,0,.2);
+}
+h2{color:#2575fc;text-align:center;margin-bottom:20px}
+.card{
+  background:#f8f9ff;
+  padding:20px;
+  border-radius:14px;
+  margin-bottom:20px;
+}
+input,select,textarea{
+  width:100%;
+  padding:14px;
+  margin-bottom:14px;
+  border-radius:10px;
+  border:2px solid #ddd;
+  font-weight:600;
+}
+button{
+  width:100%;
+  padding:15px;
+  background:#2575fc;
+  border:none;
+  color:#fff;
+  font-size:18px;
+  font-weight:700;
+  border-radius:12px;
+  cursor:pointer;
+}
+button:hover{background:#185bd8}
+#loginError{color:red;text-align:center;display:none}
+#appSection{display:none}
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+}
+th,td{
+  padding:10px;
+  border-bottom:1px solid #ccc;
+}
+th{background:#2575fc;color:#fff}
+.support a{
+  display:block;
+  text-align:center;
+  margin-top:10px;
+  color:#2575fc;
+  font-weight:700;
+  text-decoration:none;
+}
+.logout{
+  background:#fff;
+  color:#2575fc;
+  border:2px solid #2575fc;
+  margin-bottom:15px;
+}
+.status{
+  text-align:center;
+  font-weight:700;
+  margin-bottom:10px;
+}
+</style>
 </head>
+
 <body>
 
-  <div id="container">
+<div class="container">
 
-    <!-- Login Section -->
-    <section id="loginSection">
-      <h2><i class="fa-solid fa-lock"></i> Login to Uplifted Nelson Xchange</h2>
-      <input type="text" id="username" placeholder="Username" autocomplete="username" />
-      <input type="password" id="password" placeholder="Password" autocomplete="current-password" />
-      <button id="loginBtn"><i class="fa-solid fa-right-to-bracket"></i> Log In</button>
-      <p id="loginError">Invalid username or password</p>
-    </section>
+<!-- LOGIN -->
+<section id="loginSection">
+  <h2>Login – Uplifted Nelson Xchange</h2>
+  <input id="username" placeholder="Username">
+  <input id="password" type="password" placeholder="Password">
+  <button id="loginBtn">Login</button>
+  <p id="loginError">Invalid login details</p>
+</section>
 
-    <!-- App Section -->
-    <section id="appSection">
-      <button id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+<!-- APP -->
+<section id="appSection">
 
-      <h2><i class="fa-solid fa-chart-line"></i> Uplifted Nelson Xchange</h2>
+<button class="logout" id="logoutBtn">Logout</button>
 
-      <p id="writeUp">
-        Welcome to Uplifted Nelson Xchange — your trusted platform for buying and selling Bitcoins and Gift Cards of all kinds. Fast, secure, and reliable trading at your fingertips.
-      </p>
+<h2>Uplifted Nelson Xchange</h2>
 
-      <div>
-        <label for="tradeType">Trade Type</label>
-        <select id="tradeType">
-          <option value="Bitcoin">Bitcoin</option>
-          <option value="Gift Card">Gift Card</option>
-        </select>
+<p class="status" id="netStatus">🟢 Online</p>
 
-        <label for="tradeAmount">Amount</label>
-        <input type="number" id="tradeAmount" placeholder="Enter amount" min="0" step="any" />
+<div class="card">
+<p><b>We buy and sell Bitcoin, Crypto & Gift Cards</b></p>
+</div>
 
-        <label for="tradeDetails">Details</label>
-        <textarea id="tradeDetails" placeholder="Gift card type or BTC wallet info"></textarea>
+<!-- TRADE FORM -->
+<div class="card">
+<h3>Submit Trade</h3>
 
-        <button id="submitTradeBtn"><i class="fa-solid fa-paper-plane"></i> Submit Trade</button>
-      </div>
+<select id="tradeCategory">
+<option value="">Select Category</option>
+<option value="Crypto">Crypto</option>
+<option value="Gift Card">Gift Card</option>
+</select>
 
-      <div id="supportSection">
-        Need help? Contact our customer support: <a href="mailto:support@upliftednelson.com">support@upliftednelson.com</a>
-      </div>
-    </section>
+<select id="assetType" disabled>
+<option value="">Select Asset</option>
+</select>
 
-  </div>
+<input type="number" id="tradeAmount" placeholder="Amount">
 
-  <script>
-    const VALID_USERNAME = "Upliftednel";
-    const VALID_PASSWORD = "Nelson@24$";
+<textarea id="tradeDetails" placeholder="Wallet or card details"></textarea>
 
-    const loginSection = document.getElementById("loginSection");
-    const appSection = document.getElementById("appSection");
-    const loginBtn = document.getElementById("loginBtn");
-    const loginError = document.getElementById("loginError");
-    const usernameInput = document.getElementById("username");
-    const passwordInput = document.getElementById("password");
-    const logoutBtn = document.getElementById("logoutBtn");
+<button id="submitTradeBtn">Submit Trade</button>
+<p id="tradeMsg"></p>
+</div>
 
-    loginBtn.addEventListener("click", () => {
-      const username = usernameInput.value.trim();
-      const password = passwordInput.value.trim();
+<!-- HISTORY -->
+<div class="card">
+<h3>Trade History</h3>
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Category</th>
+<th>Asset</th>
+<th>Amount</th>
+</tr>
+</thead>
+<tbody id="historyTable"></tbody>
+</table>
+</div>
 
-      if(username === VALID_USERNAME && password === VALID_PASSWORD) {
-        loginError.style.display = "none";
-        loginSection.style.display = "none";
-        appSection.style.display = "block";
+<!-- SUPPORT -->
+<div class="card support">
+<p><b>Customer Support</b></p>
+<a href="https://wa.me/2348174027335" target="_blank">📲 WhatsApp Support</a>
+<a href="mailto:support@upliftednelson.com">📧 Email Support</a>
+</div>
 
-        // Clear inputs for next login
-        usernameInput.value = "";
-        passwordInput.value = "";
-      } else {
-        loginError.style.display = "block";
-      }
-    });
+</section>
+</div>
 
-    logoutBtn.addEventListener("click", () => {
-      appSection.style.display = "none";
-      loginSection.style.display = "block";
-      loginError.style.display = "none";
-    });
-  </script>
+<script>
+// LOGIN
+const VALID_USERNAME="Upliftednel";
+const VALID_PASSWORD="Nelson@24$";
+
+loginBtn.onclick=()=>{
+  if(username.value===VALID_USERNAME && password.value===VALID_PASSWORD){
+    loginSection.style.display="none";
+    appSection.style.display="block";
+    loginError.style.display="none";
+  }else{
+    loginError.style.display="block";
+  }
+};
+
+logoutBtn.onclick=()=>{
+  appSection.style.display="none";
+  loginSection.style.display="block";
+};
+
+// ASSETS
+const crypto=["Bitcoin (BTC)","Ethereum (ETH)","USDT","USDC","BNB","TRON (TRX)"];
+const giftcards=["Amazon","Apple / iTunes","Google Play","Steam","PlayStation","Xbox","Netflix","Spotify","Walmart","Sephora","Visa / Mastercard"];
+
+tradeCategory.onchange=()=>{
+  assetType.innerHTML='<option value="">Select Asset</option>';
+  assetType.disabled=false;
+  const list=tradeCategory.value==="Crypto"?crypto:giftcards;
+  list.forEach(a=>{
+    let o=document.createElement("option");
+    o.textContent=a;
+    assetType.appendChild(o);
+  });
+};
+
+// SAVE TRADE
+submitTradeBtn.onclick=()=>{
+  if(!tradeCategory.value||!assetType.value||!tradeAmount.value){
+    tradeMsg.style.color="red";
+    tradeMsg.textContent="Fill all required fields";
+    return;
+  }
+  const trade={
+    date:new Date().toLocaleString(),
+    category:tradeCategory.value,
+    asset:assetType.value,
+    amount:tradeAmount.value
+  };
+  let trades=JSON.parse(localStorage.getItem("trades"))||[];
+  trades.push(trade);
+  localStorage.setItem("trades",JSON.stringify(trades));
+  tradeMsg.style.color="green";
+  tradeMsg.textContent="Trade submitted successfully";
+  loadTrades();
+};
+
+// LOAD HISTORY
+function loadTrades(){
+  historyTable.innerHTML="";
+  (JSON.parse(localStorage.getItem("trades"))||[]).forEach(t=>{
+    let r=document.createElement("tr");
+    r.innerHTML=`<td>${t.date}</td><td>${t.category}</td><td>${t.asset}</td><td>${t.amount}</td>`;
+    historyTable.appendChild(r);
+  });
+}
+loadTrades();
+
+// OFFLINE STATUS
+window.addEventListener("offline",()=>netStatus.textContent="🔴 Offline");
+window.addEventListener("online",()=>netStatus.textContent="🟢 Online");
+</script>
 
 </body>
 </html>

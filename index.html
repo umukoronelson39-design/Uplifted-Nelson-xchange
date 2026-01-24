@@ -2,160 +2,177 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Uplifted Nelson Xchange</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-
 <style>
-body{
-  font-family:Poppins,sans-serif;
-  background:linear-gradient(135deg,#6a11cb,#2575fc);
-  margin:0;
-  min-height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
+body {
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: #fff;
+  margin: 0;
+  padding: 0;
 }
-.container{
-  background:#fff;
-  width:100%;
-  max-width:600px;
-  padding:30px;
-  border-radius:18px;
-  box-shadow:0 10px 30px rgba(0,0,0,.2);
+
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
 }
-h2{text-align:center;color:#2575fc}
-input,select,textarea,button{
-  width:100%;
-  padding:14px;
-  margin-bottom:12px;
-  border-radius:10px;
-  border:2px solid #ddd;
-  font-weight:600;
+
+h1, h2 {
+  text-align: center;
+  color: #38bdf8;
 }
-button{
-  background:#2575fc;
-  color:#fff;
-  border:none;
-  cursor:pointer;
+
+input, select, button {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 5px;
+  border: none;
 }
-button:hover{background:#185bd8}
-.card{
-  background:#f7f9ff;
-  padding:20px;
-  border-radius:14px;
-  margin-bottom:20px;
+
+button {
+  background: #38bdf8;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
 }
-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:14px;
+
+button:hover {
+  opacity: 0.85;
 }
-th,td{
-  padding:10px;
-  border-bottom:1px solid #ccc;
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
 }
-th{background:#2575fc;color:#fff}
-.status-pending{color:orange;font-weight:700}
-.status-approved{color:green;font-weight:700}
-.status-rejected{color:red;font-weight:700}
-.hidden{display:none}
-.logout{
-  background:#fff;
-  color:#2575fc;
-  border:2px solid #2575fc;
+
+th, td {
+  border: 1px solid #334155;
+  padding: 8px;
+  text-align: center;
 }
+
+th {
+  background: #1e293b;
+}
+
+.hidden {
+  display: none;
+}
+
+.status-Pending { color: orange; }
+.status-Approved { color: lightgreen; }
+.status-Rejected { color: red; }
 </style>
 </head>
 
 <body>
+
 <div class="container">
 
 <!-- LOGIN -->
-<section id="loginSection">
-<h2>Login</h2>
-<input id="username" placeholder="Username">
-<input id="password" type="password" placeholder="Password">
-<button id="loginBtn">Login</button>
-<p id="loginError" style="color:red;text-align:center;display:none">Invalid login</p>
-</section>
-
-<!-- USER APP -->
-<section id="userSection" class="hidden">
-<button class="logout" onclick="logout()">Logout</button>
-<h2>User Dashboard</h2>
-
-<div class="card">
-<select id="tradeCategory">
-<option value="">Category</option>
-<option value="Crypto">Crypto</option>
-<option value="Gift Card">Gift Card</option>
-</select>
-
-<select id="assetType" disabled>
-<option value="">Asset</option>
-</select>
-
-<input type="number" id="tradeAmount" placeholder="Amount">
-<textarea id="tradeDetails" placeholder="Details"></textarea>
-
-<button onclick="submitTrade()">Submit Trade</button>
-<p id="tradeMsg"></p>
+<div id="loginSection">
+  <h1>Uplifted Nelson Xchange</h1>
+  <input id="username" placeholder="Username">
+  <input id="password" type="password" placeholder="Password">
+  <button id="loginBtn">Login</button>
+  <p id="loginError" style="color:red;display:none;">Invalid login</p>
 </div>
 
-<div class="card">
-<h3>Your Trades</h3>
-<table>
-<thead>
-<tr><th>Date</th><th>Asset</th><th>Amount</th><th>Status</th></tr>
-</thead>
-<tbody id="userTrades"></tbody>
-</table>
-</div>
-</section>
+<!-- USER DASHBOARD -->
+<div id="userSection" class="hidden">
+  <h2>User Dashboard</h2>
 
-<!-- ADMIN -->
-<section id="adminSection" class="hidden">
-<button class="logout" onclick="logout()">Logout</button>
-<h2>Admin Dashboard</h2>
+  <p>We buy and sell Bitcoins, Crypto & all Gift Cards</p>
 
-<div class="card">
-<h3>All Trades</h3>
-<table>
-<thead>
-<tr><th>Date</th><th>User</th><th>Asset</th><th>Amount</th><th>Status</th><th>Action</th></tr>
-</thead>
-<tbody id="adminTrades"></tbody>
-</table>
+  <select id="tradeCategory">
+    <option value="">Select Category</option>
+    <option value="Crypto">Crypto</option>
+    <option value="Gift Card">Gift Card</option>
+  </select>
+
+  <select id="assetType" disabled>
+    <option value="">Select Asset</option>
+  </select>
+
+  <input id="amount" placeholder="Enter Amount">
+  <button onclick="submitTrade()">Submit Trade</button>
+
+  <h3>Your Trades</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Category</th>
+        <th>Asset</th>
+        <th>Amount</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="userTrades"></tbody>
+  </table>
+
+  <button onclick="logout()">Logout</button>
 </div>
-</section>
+
+<!-- ADMIN DASHBOARD -->
+<div id="adminSection" class="hidden">
+  <h2>Admin Dashboard</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Category</th>
+        <th>Asset</th>
+        <th>Amount</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="adminTrades"></tbody>
+  </table>
+
+  <button onclick="logout()">Logout</button>
+</div>
 
 </div>
 
 <script>
-const USER={u:"Upliftednel",p:"Nelson@24$"};
-const ADMIN={u:"admin",p:"Admin@123"};
+const USERNAME = "Upliftednel";
+const PASSWORD = "Nelson@24$";
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "Admin@123";
 
-const crypto=["Bitcoin","Ethereum","USDT","USDC","BNB","TRON"];
-const gift=["Amazon","Apple","Google Play","Steam","PlayStation","Xbox","Netflix","Spotify","Visa"];
+const loginSection = document.getElementById("loginSection");
+const userSection = document.getElementById("userSection");
+const adminSection = document.getElementById("adminSection");
 
-tradeCategory.onchange=()=>{
-  assetType.innerHTML='<option value="">Asset</option>';
-  assetType.disabled=false;
-  (tradeCategory.value==="Crypto"?crypto:gift).forEach(a=>{
-    let o=document.createElement("option");o.textContent=a;assetType.appendChild(o);
-  });
-};
+const cryptoAssets = ["Bitcoin (BTC)", "Ethereum (ETH)", "USDT", "USDC", "BNB", "TRON"];
+const giftCards = ["Amazon", "Apple", "Google Play", "Steam", "Netflix", "Visa"];
 
-loginBtn.onclick=()=>{
-  if(username.value===USER.u && password.value===USER.p){
+document.getElementById("loginBtn").onclick = () => {
+  const u = username.value;
+  const p = password.value;
+
+  if (u === USERNAME && p === PASSWORD) {
     localStorage.setItem("role","user");
-    showUser();
-  }else if(username.value===ADMIN.u && password.value===ADMIN.p){
+    loginSection.classList.add("hidden");
+    userSection.classList.remove("hidden");
+    renderUserTrades();
+  }
+  else if (u === ADMIN_USER && p === ADMIN_PASS) {
     localStorage.setItem("role","admin");
-    showAdmin();
-  }else loginError.style.display="block";
+    loginSection.classList.add("hidden");
+    adminSection.classList.remove("hidden");
+    renderAdminTrades();
+  }
+  else {
+    loginError.style.display = "block";
+  }
 };
 
 function logout(){
@@ -163,74 +180,95 @@ function logout(){
   location.reload();
 }
 
-function showUser(){
-  loginSection.style.display="none";
+// Auto login offline
+if(localStorage.getItem("role") === "user"){
+  loginSection.classList.add("hidden");
   userSection.classList.remove("hidden");
-  loadUserTrades();
+  renderUserTrades();
+}
+if(localStorage.getItem("role") === "admin"){
+  loginSection.classList.add("hidden");
+  adminSection.classList.remove("hidden");
+  renderAdminTrades();
 }
 
-function showAdmin(){
-  loginSection.style.display="none";
-  adminSection.classList.remove("hidden");
-  loadAdminTrades();
-}
+// Trade category logic
+tradeCategory.onchange = () => {
+  assetType.innerHTML = '<option value="">Select Asset</option>';
+  assetType.disabled = false;
+  let list = tradeCategory.value === "Crypto" ? cryptoAssets : giftCards;
+  list.forEach(a => {
+    let o = document.createElement("option");
+    o.textContent = a;
+    assetType.appendChild(o);
+  });
+};
 
 function submitTrade(){
-  if(!assetType.value||!tradeAmount.value) return;
-  let trades=JSON.parse(localStorage.getItem("trades"))||[];
+  const trades = JSON.parse(localStorage.getItem("trades")) || [];
   trades.push({
-    date:new Date().toLocaleString(),
-    user:"Upliftednel",
-    asset:assetType.value,
-    amount:tradeAmount.value,
-    status:"Pending"
+    user: USERNAME,
+    category: tradeCategory.value,
+    asset: assetType.value,
+    amount: amount.value,
+    status: "Pending"
   });
-  localStorage.setItem("trades",JSON.stringify(trades));
-  tradeMsg.textContent="Trade submitted (Pending)";
-  tradeMsg.style.color="green";
-  loadUserTrades();
+  localStorage.setItem("trades", JSON.stringify(trades));
+  renderUserTrades();
+  alert("Trade submitted");
 }
 
-function loadUserTrades(){
-  userTrades.innerHTML="";
-  (JSON.parse(localStorage.getItem("trades"))||[])
-  .filter(t=>t.user==="Upliftednel")
-  .forEach(t=>{
-    userTrades.innerHTML+=`<tr>
-    <td>${t.date}</td>
-    <td>${t.asset}</td>
-    <td>${t.amount}</td>
-    <td class="status-${t.status.toLowerCase()}">${t.status}</td>
-    </tr>`;
-  });
-}
-
-function loadAdminTrades(){
-  adminTrades.innerHTML="";
-  (JSON.parse(localStorage.getItem("trades"))||[]).forEach((t,i)=>{
-    adminTrades.innerHTML+=`<tr>
-    <td>${t.date}</td>
-    <td>${t.user}</td>
-    <td>${t.asset}</td>
-    <td>${t.amount}</td>
-    <td class="status-${t.status.toLowerCase()}">${t.status}</td>
-    <td>
-      <button onclick="updateTrade(${i},'Approved')">✔</button>
-      <button onclick="updateTrade(${i},'Rejected')">✖</button>
-    </td>
-    </tr>`;
+function renderUserTrades(){
+  const trades = JSON.parse(localStorage.getItem("trades")) || [];
+  userTrades.innerHTML = "";
+  trades.filter(t => t.user === USERNAME).forEach(t => {
+    userTrades.innerHTML += `
+      <tr>
+        <td>${t.category}</td>
+        <td>${t.asset}</td>
+        <td>${t.amount}</td>
+        <td class="status-${t.status}">${t.status}</td>
+      </tr>
+    `;
   });
 }
 
-function updateTrade(i,status){
-  let trades=JSON.parse(localStorage.getItem("trades"));
-  trades[i].status=status;
-  localStorage.setItem("trades",JSON.stringify(trades));
-  loadAdminTrades();
+function renderAdminTrades(){
+  const trades = JSON.parse(localStorage.getItem("trades")) || [];
+  adminTrades.innerHTML = "";
+  trades.forEach((t,i) => {
+    adminTrades.innerHTML += `
+      <tr>
+        <td>${t.user}</td>
+        <td>${t.category}</td>
+        <td>${t.asset}</td>
+        <td>${t.amount}</td>
+        <td class="status-${t.status}">${t.status}</td>
+        <td>
+          ${t.status === "Pending" ? `
+            <button onclick="approve(${i})">✔</button>
+            <button onclick="reject(${i})">✖</button>
+          ` : "-"}
+        </td>
+      </tr>
+    `;
+  });
 }
 
-if(localStorage.getItem("role")==="user") showUser();
-if(localStorage.getItem("role")==="admin") showAdmin();
+function approve(i){
+  let t = JSON.parse(localStorage.getItem("trades"));
+  t[i].status = "Approved";
+  localStorage.setItem("trades", JSON.stringify(t));
+  renderAdminTrades();
+}
+
+function reject(i){
+  let t = JSON.parse(localStorage.getItem("trades"));
+  t[i].status = "Rejected";
+  localStorage.setItem("trades", JSON.stringify(t));
+  renderAdminTrades();
+}
 </script>
+
 </body>
 </html>

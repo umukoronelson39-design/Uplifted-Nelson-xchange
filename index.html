@@ -3,57 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nelson Xchange | Trade</title>
+    <title>Nelson Xchange | Secure Trading</title>
     <script src="https://api.backendless.com/sdk/js/latest/backendless.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 20px; margin: 0; }
-        .box { width: 100%; max-width: 400px; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 15px; margin: 0; }
+        .box { width: 100%; max-width: 420px; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; margin-top: 10px; }
         input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 15px; }
-        button { width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        button { width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.2s; }
         
         .login-btn { background: #007bff; color: white; }
-        .trade-btn { background: #6f42c1; color: white; margin-top: 10px; }
+        .trade-btn { background: #6f42c1; color: white; margin-top: 10px; font-size: 16px; }
         .wallet-card { background: linear-gradient(135deg, #17a2b8, #117a8b); color: white; padding: 20px; border-radius: 15px; margin: 15px 0; }
         
-        #status { font-size: 13px; margin-top: 10px; font-weight: 500; }
-        .trade-section { background: #f8f9fa; padding: 15px; border-radius: 12px; margin-top: 20px; text-align: left; }
+        .trade-section { background: #fdfdfd; padding: 15px; border: 1px solid #eee; border-radius: 12px; margin-top: 20px; text-align: left; }
+        label { font-size: 12px; font-weight: bold; color: #666; margin-left: 5px; }
+        #status { font-size: 13px; margin-top: 10px; min-height: 18px; }
+        .upload-label { display: block; background: #e9ecef; padding: 10px; border-radius: 8px; border: 1px dashed #ccc; cursor: pointer; text-align: center; margin-top: 5px; font-size: 13px; }
     </style>
 </head>
 <body>
 
     <div id="auth-screen" class="box">
-        <h2>Nelson Xchange</h2>
+        <h2 style="margin-bottom:5px;">Nelson Xchange</h2>
+        <p style="color:#888; font-size: 13px; margin-top:0;">Crypto & Giftcard OTC Desk</p>
         <input id="email" type="email" placeholder="Email Address">
         <input id="password" type="password" placeholder="Password">
-        <button class="login-btn" onclick="login()">Login to Trade</button>
-        <div id="status">Ready to trade</div>
+        <button class="login-btn" onclick="login()">Sign In to Trade</button>
+        <div id="status">Ready</div>
     </div>
 
     <div id="dashboard-screen" class="box" style="display:none;">
-        <h3 id="user-email" style="color: #007bff; font-size: 14px;"></h3>
+        <p id="user-email" style="color: #007bff; font-size: 13px; font-weight: 500; margin:0;"></p>
         
         <div class="wallet-card">
-            <p style="margin:0; font-size: 12px; opacity: 0.9;">AVAILABLE BALANCE</p>
+            <p style="margin:0; font-size: 11px; opacity: 0.8;">ACCOUNT BALANCE</p>
             <h1 id="balance-display" style="margin:5px 0;">$0.00</h1>
         </div>
 
         <div class="trade-section">
-            <h4 style="margin-top:0;">Trade Center</h4>
+            <h4 style="margin: 0 0 10px 0; color: #333;">Submit New Trade</h4>
             
-            <label style="font-size: 12px;">I want to:</label>
-            <select id="trade-type">
-                <option value="Buy Crypto">Buy Crypto (BTC, ETH, USDT)</option>
-                <option value="Sell Crypto">Sell Crypto</option>
-                <option value="Sell Giftcard">Sell Gift Card (Amazon, Steam, etc.)</option>
+            <label>Trade Category</label>
+            <select id="trade-category" onchange="toggleUpload()">
+                <option value="Crypto">Crypto (BTC, ETH, USDT, XRP)</option>
+                <option value="Giftcard">Gift Card (Amazon, Steam, iTunes, etc.)</option>
             </select>
 
-            <input id="asset-name" placeholder="e.g. Bitcoin or iTunes Card">
-            <input id="trade-amount" type="number" placeholder="Amount in USD ($)">
+            <label>Asset Name & Details</label>
+            <input id="asset-name" placeholder="e.g. USDT (TRC20) or Amazon USA Card">
+            
+            <label>Amount (USD)</label>
+            <input id="trade-amount" type="number" placeholder="Enter amount in $">
+
+            <div id="upload-container" style="display:none;">
+                <label>Upload Card Image (Back/Front)</label>
+                <input type="file" id="card-image" accept="image/*" style="display:none;">
+                <label for="card-image" class="upload-label">📸 Tap to Upload Card Photo</label>
+            </div>
             
             <button class="trade-btn" onclick="submitTrade()">Submit Trade Request</button>
         </div>
 
-        <button onclick="location.reload()" style="background:#eee; color:#333; margin-top:20px;">Logout</button>
+        <button onclick="location.reload()" style="background:none; color:#dc3545; font-size: 13px; margin-top: 15px;">Secure Logout</button>
     </div>
 
     <script>
@@ -62,7 +73,6 @@
         function login() {
             const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;
-            
             Backendless.UserService.login(email, password, true)
                 .then((user) => {
                     document.getElementById("auth-screen").style.display = "none";
@@ -73,29 +83,46 @@
                 .catch(err => alert(err.message));
         }
 
-        function submitTrade() {
-            const type = document.getElementById("trade-type").value;
+        function toggleUpload() {
+            const category = document.getElementById("trade-category").value;
+            document.getElementById("upload-container").style.display = category === "Giftcard" ? "block" : "none";
+        }
+
+        async function submitTrade() {
+            const category = document.getElementById("trade-category").value;
             const asset = document.getElementById("asset-name").value;
             const amount = document.getElementById("trade-amount").value;
+            const fileInput = document.getElementById("card-image");
 
-            if(!asset || !amount) return alert("Please fill in trade details");
+            if(!asset || !amount) return alert("Please enter asset and amount.");
 
-            // Save the trade request to a new table called "Trades"
+            let fileUrl = "";
+            
+            // If it's a giftcard, upload the image first
+            if (category === "Giftcard" && fileInput.files.length > 0) {
+                try {
+                    const uploadedFile = await Backendless.Files.upload(fileInput.files[0], "card_images", true);
+                    fileUrl = uploadedFile.fileURL;
+                } catch (e) {
+                    return alert("Image upload failed: " + e.message);
+                }
+            }
+
             const tradeData = {
-                type: type,
+                category: category,
                 asset: asset,
                 amount: Number(amount),
-                status: "Pending",
-                userEmail: document.getElementById("user-email").innerText
+                status: "Pending Verification",
+                userEmail: document.getElementById("user-email").innerText,
+                proofImage: fileUrl
             };
 
             Backendless.Data.of("Trades").save(tradeData)
                 .then(() => {
-                    alert("Trade Submitted! Nelson will review and contact you.");
-                    document.getElementById("asset-name").value = "";
-                    document.getElementById("trade-amount").value = "";
+                    alert("Trade Submitted Successfully! Nelson will contact you shortly to complete the transaction.");
+                    location.reload();
                 })
-                .catch(err => alert("Error submitting trade: " + err.message));
+                .catch(err => alert("Error: " + err.message));
         }
     </script>
 </body>

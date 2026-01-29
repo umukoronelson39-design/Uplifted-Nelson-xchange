@@ -3,33 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nelson Xchange | Secure Trading</title>
+    <title>Nelson Xchange | Professional OTC</title>
     <script src="https://api.backendless.com/sdk/js/latest/backendless.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 15px; margin: 0; }
-        .box { width: 100%; max-width: 420px; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; margin-top: 10px; }
+        .box { width: 100%; max-width: 420px; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
         input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 15px; }
-        button { width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        button { width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
         
         .login-btn { background: #007bff; color: white; }
-        .trade-btn { background: #6f42c1; color: white; margin-top: 10px; font-size: 16px; }
+        .trade-btn { background: #6f42c1; color: white; margin-top: 10px; }
         .wallet-card { background: linear-gradient(135deg, #17a2b8, #117a8b); color: white; padding: 20px; border-radius: 15px; margin: 15px 0; }
         
         .trade-section { background: #fdfdfd; padding: 15px; border: 1px solid #eee; border-radius: 12px; margin-top: 20px; text-align: left; }
-        label { font-size: 12px; font-weight: bold; color: #666; margin-left: 5px; }
-        #status { font-size: 13px; margin-top: 10px; min-height: 18px; }
+        .history-section { margin-top: 25px; text-align: left; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
+        th { text-align: left; color: #888; padding-bottom: 5px; border-bottom: 1px solid #eee; }
+        td { padding: 10px 0; border-bottom: 1px solid #f9f9f9; }
+        .status-pending { color: orange; font-weight: bold; }
+        .status-completed { color: green; font-weight: bold; }
         .upload-label { display: block; background: #e9ecef; padding: 10px; border-radius: 8px; border: 1px dashed #ccc; cursor: pointer; text-align: center; margin-top: 5px; font-size: 13px; }
     </style>
 </head>
 <body>
 
     <div id="auth-screen" class="box">
-        <h2 style="margin-bottom:5px;">Nelson Xchange</h2>
-        <p style="color:#888; font-size: 13px; margin-top:0;">Crypto & Giftcard OTC Desk</p>
+        <h2>Nelson Xchange</h2>
         <input id="email" type="email" placeholder="Email Address">
         <input id="password" type="password" placeholder="Password">
         <button class="login-btn" onclick="login()">Sign In to Trade</button>
-        <div id="status">Ready</div>
     </div>
 
     <div id="dashboard-screen" class="box" style="display:none;">
@@ -41,22 +44,15 @@
         </div>
 
         <div class="trade-section">
-            <h4 style="margin: 0 0 10px 0; color: #333;">Submit New Trade</h4>
-            
-            <label>Trade Category</label>
+            <h4 style="margin: 0 0 10px 0;">Submit New Trade</h4>
             <select id="trade-category" onchange="toggleUpload()">
                 <option value="Crypto">Crypto (BTC, ETH, USDT, XRP)</option>
-                <option value="Giftcard">Gift Card (Amazon, Steam, iTunes, etc.)</option>
+                <option value="Giftcard">Gift Card (Amazon, Steam, etc.)</option>
             </select>
-
-            <label>Asset Name & Details</label>
-            <input id="asset-name" placeholder="e.g. USDT (TRC20) or Amazon USA Card">
+            <input id="asset-name" placeholder="e.g. USDT or Amazon Card">
+            <input id="trade-amount" type="number" placeholder="Amount in $">
             
-            <label>Amount (USD)</label>
-            <input id="trade-amount" type="number" placeholder="Enter amount in $">
-
             <div id="upload-container" style="display:none;">
-                <label>Upload Card Image (Back/Front)</label>
                 <input type="file" id="card-image" accept="image/*" style="display:none;">
                 <label for="card-image" class="upload-label">📸 Tap to Upload Card Photo</label>
             </div>
@@ -64,7 +60,22 @@
             <button class="trade-btn" onclick="submitTrade()">Submit Trade Request</button>
         </div>
 
-        <button onclick="location.reload()" style="background:none; color:#dc3545; font-size: 13px; margin-top: 15px;">Secure Logout</button>
+        <div class="history-section">
+            <h4 style="margin-bottom: 5px;">Recent Trades</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Asset</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="history-body">
+                    </tbody>
+            </table>
+        </div>
+
+        <button onclick="location.reload()" style="background:none; color:#dc3545; font-size: 13px; margin-top: 20px; width: 100%;">Secure Logout</button>
     </div>
 
     <script>
@@ -79,6 +90,7 @@
                     document.getElementById("dashboard-screen").style.display = "block";
                     document.getElementById("user-email").innerText = user.email;
                     document.getElementById("balance-display").innerText = "$" + (user.balance || 0).toFixed(2);
+                    loadTradeHistory(user.email);
                 })
                 .catch(err => alert(err.message));
         }
@@ -92,37 +104,49 @@
             const category = document.getElementById("trade-category").value;
             const asset = document.getElementById("asset-name").value;
             const amount = document.getElementById("trade-amount").value;
+            const email = document.getElementById("user-email").innerText;
             const fileInput = document.getElementById("card-image");
 
-            if(!asset || !amount) return alert("Please enter asset and amount.");
+            if(!asset || !amount) return alert("Fill all fields");
 
             let fileUrl = "";
-            
-            // If it's a giftcard, upload the image first
             if (category === "Giftcard" && fileInput.files.length > 0) {
-                try {
-                    const uploadedFile = await Backendless.Files.upload(fileInput.files[0], "card_images", true);
-                    fileUrl = uploadedFile.fileURL;
-                } catch (e) {
-                    return alert("Image upload failed: " + e.message);
-                }
+                const uploadedFile = await Backendless.Files.upload(fileInput.files[0], "card_images", true);
+                fileUrl = uploadedFile.fileURL;
             }
 
             const tradeData = {
                 category: category,
                 asset: asset,
                 amount: Number(amount),
-                status: "Pending Verification",
-                userEmail: document.getElementById("user-email").innerText,
+                status: "Pending",
+                userEmail: email,
                 proofImage: fileUrl
             };
 
             Backendless.Data.of("Trades").save(tradeData)
                 .then(() => {
-                    alert("Trade Submitted Successfully! Nelson will contact you shortly to complete the transaction.");
-                    location.reload();
+                    alert("Trade Submitted!");
+                    loadTradeHistory(email); // Refresh the list
                 })
-                .catch(err => alert("Error: " + err.message));
+                .catch(err => alert(err.message));
+        }
+
+        function loadTradeHistory(email) {
+            const query = Backendless.DataQueryBuilder.create().setWhereClause(`userEmail = '${email}'`);
+            Backendless.Data.of("Trades").find(query)
+                .then(trades => {
+                    const tbody = document.getElementById("history-body");
+                    tbody.innerHTML = ""; 
+                    trades.forEach(t => {
+                        const row = `<tr>
+                            <td>${t.asset}</td>
+                            <td>$${t.amount}</td>
+                            <td class="status-${t.status.toLowerCase()}">${t.status}</td>
+                        </tr>`;
+                        tbody.innerHTML += row;
+                    });
+                });
         }
     </script>
 </body>

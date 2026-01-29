@@ -12,14 +12,14 @@
         button { width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
         .login-btn { background: #007bff; color: white; }
         .trade-btn { background: #6f42c1; color: white; margin-top: 10px; }
-        .refresh-btn { background: #f8f9fa; color: #007bff; font-size: 11px; padding: 5px 10px; width: auto; margin: 0; border: 1px solid #007bff; }
+        .refresh-btn { background: #f8f9fa; color: #007bff; font-size: 11px; padding: 5px 10px; width: auto; margin: 0; border: 1px solid #007bff; border-radius: 5px; }
         .whatsapp-btn { background: #25D366; color: white; margin-top: 20px; font-size: 14px; text-decoration: none; display: flex; align-items: center; justify-content: center; padding: 12px; border-radius: 10px; }
         .wallet-card { background: linear-gradient(135deg, #17a2b8, #117a8b); color: white; padding: 20px; border-radius: 15px; margin: 15px 0; }
         .trade-section { background: #fdfdfd; padding: 15px; border: 1px solid #eee; border-radius: 12px; margin-top: 20px; text-align: left; }
         .history-section { margin-top: 25px; text-align: left; }
         table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
         th { text-align: left; color: #888; padding-bottom: 5px; border-bottom: 1px solid #eee; }
-        td { padding: 10px 0; border-bottom: 1px solid #f9f9f9; }
+        td { padding: 10px 0; border-bottom: 1px solid #f9f9f9; vertical-align: middle; }
         .status-pending { color: #f39c12; font-weight: bold; }
         .status-completed { color: #27ae60; font-weight: bold; }
         .status-rejected { color: #dc3545; font-weight: bold; }
@@ -64,17 +64,18 @@
             </div>
             <table>
                 <thead>
-                    <tr><th>Asset</th><th>Amt</th><th>Status</th><th>Action</th></tr>
+                    <tr><th>Asset</th><th>Amt</th><th>Status</th><th>Del</th></tr>
                 </thead>
                 <tbody id="history-body"></tbody>
             </table>
         </div>
 
-        <a href="https://wa.me/YOURNUMBER" class="whatsapp-btn" target="_blank">💬 Chat Support</a>
+        <a href="https://wa.me/YOURNUMBERHERE" class="whatsapp-btn" target="_blank">💬 Chat Support</a>
         <button onclick="location.reload()" style="background:none; color:#dc3545; font-size: 13px; margin-top: 15px; width: 100%;">Logout</button>
     </div>
 
     <script>
+        // Replace with your actual App ID and API Key if they ever change
         Backendless.initApp("EAE10E02-8554-43FA-A445-17B496B2F52E", "7905FB19-9C35-4313-976B-1AE613B9A276");
         let userEmail = "";
 
@@ -88,6 +89,7 @@
                 document.getElementById("user-email-display").innerText = user.email;
                 updateBalanceDisplay(user.balance);
                 refreshHistory();
+                // Check for updates every 30 seconds
                 setInterval(refreshHistory, 30000);
             }).catch(err => alert(err.message));
         }
@@ -104,59 +106,81 @@
             const asset = document.getElementById("asset-name").value;
             const amount = document.getElementById("trade-amount").value;
             if(!asset || !amount) return alert("Fill all fields");
+            
             let fileUrl = "";
             const fileInput = document.getElementById("card-image");
             if (fileInput.files.length > 0) {
-                const uploaded = await Backendless.Files.upload(fileInput.files[0], "trades", true);
-                fileUrl = uploaded.fileURL;
+                try {
+                    const uploaded = await Backendless.Files.upload(fileInput.files[0], "trades", true);
+                    fileUrl = uploaded.fileURL;
+                } catch(e) { console.log("File error", e); }
             }
+
             const trade = {
-                asset: asset,
+                asset: asset, 
                 amount: Number(amount),
                 status: "Pending",
                 userEmail: userEmail,
-                proofImage: fileUrl,
                 paidOut: false
             };
+            if(fileUrl) trade.proofImage = fileUrl;
+
             Backendless.Data.of("Trades").save(trade).then(() => {
                 alert("Trade Sent!");
                 refreshHistory();
-            });
+            }).catch(err => alert("Save error: " + err.message));
         }
 
         function refreshHistory() {
             if(!userEmail) return;
+            // Case-sensitive check for the whereClause
             const query = Backendless.DataQueryBuilder.create().setWhereClause(`userEmail = '${userEmail}'`).setSortBy(["created DESC"]);
+            
             Backendless.Data.of("Trades").find(query).then(trades => {
                 const tbody = document.getElementById("history-body");
                 tbody.innerHTML = "";
+                
                 trades.forEach(t => {
-                    // Check payout
-                    if (t.status === "Completed" && t.paidOut !== true) { processPayout(t); }
+                    // Logic to handle both Capital and lowercase column names
+                    const amt = t.amount !== undefined ? t.amount : t.Amount || 0;
+                    const assetName = t.asset || t.Asset || "---";
+                    const stat = t.status || t.Status || "Pending";
+                    const isPaid = t.paidOut !== undefined ? t.paidOut : t.PaidOut || false;
+
+                    // Trigger auto-payout only when you mark it Completed
+                    if (stat === "Completed" && isPaid !== true) { 
+                        processPayout(t, amt); 
+                    }
                     
-                    const isFinished = (t.status === "Completed" || t.status === "Rejected");
-                    const actionBtn = isFinished ? `<button onclick="deleteTrade('${t.objectId}')" style="color:red; background:none; border:none;">Delete</button>` : "🔒";
+                    const isFinished = (stat === "Completed" || stat === "Rejected");
+                    const actionBtn = isFinished 
+                        ? `<button onclick="deleteTrade('${t.objectId}')" style="background:none; border:none; cursor:pointer; font-size:16px;">🗑️</button>` 
+                        : "🔒";
                     
                     tbody.innerHTML += `<tr>
-                        <td>${t.asset}</td>
-                        <td>$${t.amount}</td>
-                        <td class="status-${(t.status || 'pending').toLowerCase()}">${t.status}</td>
-                        <td>${actionBtn}</td>
+                        <td>${assetName}</td>
+                        <td>$${amt}</td>
+                        <td class="status-${stat.toLowerCase()}">${stat}</td>
+                        <td style="text-align:center">${actionBtn}</td>
                     </tr>`;
                 });
-            });
+            }).catch(err => console.log("Refresh Error:", err));
         }
 
         function deleteTrade(id) {
-            if (confirm("Delete this record?")) {
-                Backendless.Data.of("Trades").remove({ objectId: id }).then(() => refreshHistory());
+            if (confirm("Delete this from history?")) {
+                Backendless.Data.of("Trades").remove({ objectId: id }).then(() => {
+                    refreshHistory();
+                }).catch(err => alert("Delete error: " + err.message));
             }
         }
 
-        function processPayout(trade) {
+        function processPayout(trade, amt) {
             Backendless.UserService.getCurrentUser().then(user => {
-                user.balance = (user.balance || 0) + trade.amount;
+                const currentBal = user.balance || 0;
+                user.balance = currentBal + amt;
                 Backendless.UserService.update(user).then(upd => {
+                    // Mark as paid in database to prevent double-payout
                     trade.paidOut = true;
                     Backendless.Data.of("Trades").save(trade);
                     updateBalanceDisplay(upd.balance);

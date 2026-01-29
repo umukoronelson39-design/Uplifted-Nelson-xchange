@@ -8,10 +8,11 @@
         body { font-family: 'Segoe UI', Arial; background: #f0f2f5; display: flex; justify-content: center; padding-top: 40px; }
         .box { width: 340px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); text-align: center; }
         input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; padding: 12px; margin: 10px 0; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; }
+        button { width: 100%; padding: 12px; margin: 10px 0; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.2s; }
         
         .login-btn { background: #007bff; color: white; }
         .reg-btn { background: #6c757d; color: white; }
+        .deposit-btn { background: #28a745; color: white; flex: 1; }
         .logout-btn { background: #dc3545; color: white; margin-top: 20px; }
         
         .wallet-card { background: #17a2b8; color: white; padding: 20px; border-radius: 12px; margin: 20px 0; }
@@ -37,19 +38,25 @@
         
         <div class="wallet-card">
             <p style="margin:0; font-size: 12px; opacity: 0.9;">AVAILABLE BALANCE</p>
-            <h1 style="margin:5px 0;">$500.00</h1>
+            <h1 id="balance-display" style="margin:5px 0;">$0.00</h1>
         </div>
 
-        <div style="text-align:left; font-size: 14px; line-height: 1.6;">
+        <p style="font-size: 12px; color: #666;">Quick Deposit:</p>
+        <div style="display: flex; gap: 10px;">
+            <button class="deposit-btn" onclick="addMoney(100)">+$100</button>
+            <button class="deposit-btn" onclick="addMoney(500)">+$500</button>
+        </div>
+
+        <div style="text-align:left; font-size: 13px; line-height: 1.6; margin-top: 15px; color: #444;">
             <div>✅ Identity Verified</div>
             <div>💳 Wallet Connected</div>
         </div>
 
-        <button class="logout-btn" onclick="logout()">Logout</button>
+        <button class="logout-btn" onclick="logout()">Secure Logout</button>
     </div>
 
     <script>
-        // Use your working Keys
+        // API Keys
         Backendless.initApp("EAE10E02-8554-43FA-A445-17B496B2F52E", "7905FB19-9C35-4313-976B-1AE613B9A276");
 
         const statusDiv = document.getElementById("status");
@@ -84,14 +91,35 @@
 
             Backendless.UserService.login(email, password, true)
                 .then((user) => {
-                    // SWITCH SCREENS
                     authScreen.style.display = "none";
                     dashScreen.style.display = "block";
-                    
-                    // SHOW EMAIL
                     document.getElementById("user-email").innerText = user.email;
+                    
+                    // Fetch balance from the user object in database
+                    const bal = user.balance || 0;
+                    document.getElementById("balance-display").innerText = "$" + bal.toFixed(2);
+                    updateStatus("");
                 })
                 .catch(err => updateStatus("Error: " + err.message, "red"));
+        }
+
+        function addMoney(amount) {
+            updateStatus("Processing deposit...", "blue");
+
+            Backendless.UserService.getCurrentUser()
+                .then(user => {
+                    if (!user) throw new Error("Session expired. Please login again.");
+                    
+                    const currentBal = user.balance || 0;
+                    user.balance = currentBal + amount;
+
+                    return Backendless.UserService.update(user);
+                })
+                .then(updatedUser => {
+                    document.getElementById("balance-display").innerText = "$" + updatedUser.balance.toFixed(2);
+                    updateStatus("Deposit of $" + amount + " successful!", "green");
+                })
+                .catch(err => updateStatus("Deposit Failed: " + err.message, "red"));
         }
 
         function logout() {
@@ -100,6 +128,5 @@
                 .catch(err => updateStatus(err.message, "red"));
         }
     </script>
-
 </body>
 </html>

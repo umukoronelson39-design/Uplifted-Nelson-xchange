@@ -11,7 +11,6 @@
         input { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
         button { width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 15px; transition: 0.2s; }
         
-        /* Styles */
         .login-btn { background: #007bff; color: white; }
         .reg-btn { background: #6c757d; color: white; }
         .deposit-btn { background: #28a745; color: white; flex: 1; }
@@ -109,6 +108,7 @@
                     dashScreen.style.display = "block";
                     document.getElementById("user-email").innerText = user.email;
                     
+                    // Display initial balance from DB
                     const bal = user.balance || 0;
                     document.getElementById("balance-display").innerText = "$" + bal.toLocaleString(undefined, {minimumFractionDigits: 2});
                     setStatus("");
@@ -116,7 +116,6 @@
                 .catch(err => setStatus("Login Failed: " + err.message, "red"));
         }
 
-        // ONE FUNCTION FOR BOTH DEPOSIT AND WITHDRAW
         function updateBalance(amount) {
             setStatus("Processing...", "blue");
 
@@ -127,26 +126,20 @@
                     const currentBal = user.balance || 0;
                     const newTotal = currentBal + amount;
 
-                    // Safety: Prevent negative balance
-                    if (newTotal < 0) {
-                        throw new Error("Insufficient funds for withdrawal.");
-                    }
+                    if (newTotal < 0) throw new Error("Insufficient funds!");
 
                     user.balance = newTotal;
                     return Backendless.UserService.update(user);
                 })
                 .then(updatedUser => {
                     document.getElementById("balance-display").innerText = "$" + updatedUser.balance.toLocaleString(undefined, {minimumFractionDigits: 2});
-                    const type = amount > 0 ? "Deposit" : "Withdrawal";
-                    setStatus(type + " successful!", "green");
+                    setStatus(amount > 0 ? "Deposit successful!" : "Withdrawal successful!", "green");
                 })
                 .catch(err => setStatus(err.message, "red"));
         }
 
         function logout() {
-            Backendless.UserService.logout()
-                .then(() => location.reload())
-                .catch(err => setStatus(err.message, "red"));
+            Backendless.UserService.logout().then(() => location.reload());
         }
     </script>
 </body>

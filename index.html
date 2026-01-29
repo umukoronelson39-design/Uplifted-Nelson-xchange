@@ -13,6 +13,7 @@
         
         .login-btn { background: #007bff; color: white; }
         .trade-btn { background: #6f42c1; color: white; margin-top: 10px; }
+        .refresh-btn { background: #e9ecef; color: #333; font-size: 11px; padding: 5px 10px; width: auto; margin: 0; display: inline-block; }
         .wallet-card { background: linear-gradient(135deg, #17a2b8, #117a8b); color: white; padding: 20px; border-radius: 15px; margin: 15px 0; }
         
         .trade-section { background: #fdfdfd; padding: 15px; border: 1px solid #eee; border-radius: 12px; margin-top: 20px; text-align: left; }
@@ -21,8 +22,9 @@
         table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
         th { text-align: left; color: #888; padding-bottom: 5px; border-bottom: 1px solid #eee; }
         td { padding: 10px 0; border-bottom: 1px solid #f9f9f9; }
-        .status-pending { color: orange; font-weight: bold; }
-        .status-completed { color: green; font-weight: bold; }
+        .status-pending { color: #f39c12; font-weight: bold; }
+        .status-completed { color: #27ae60; font-weight: bold; }
+        .status-failed { color: #e74c3c; font-weight: bold; }
         .upload-label { display: block; background: #e9ecef; padding: 10px; border-radius: 8px; border: 1px dashed #ccc; cursor: pointer; text-align: center; margin-top: 5px; font-size: 13px; }
     </style>
 </head>
@@ -36,7 +38,7 @@
     </div>
 
     <div id="dashboard-screen" class="box" style="display:none;">
-        <p id="user-email" style="color: #007bff; font-size: 13px; font-weight: 500; margin:0;"></p>
+        <p id="user-email-display" style="color: #007bff; font-size: 13px; font-weight: 500; margin:0;"></p>
         
         <div class="wallet-card">
             <p style="margin:0; font-size: 11px; opacity: 0.8;">ACCOUNT BALANCE</p>
@@ -61,7 +63,10 @@
         </div>
 
         <div class="history-section">
-            <h4 style="margin-bottom: 5px;">Recent Trades</h4>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h4 style="margin: 0;">Recent Trades</h4>
+                <button class="refresh-btn" onclick="refreshHistory()">🔄 Refresh</button>
+            </div>
             <table>
                 <thead>
                     <tr>
@@ -71,28 +76,32 @@
                     </tr>
                 </thead>
                 <tbody id="history-body">
-                    </tbody>
+                    <tr><td colspan="3" style="text-align:center; padding:10px; color:#999;">Loading history...</td></tr>
+                </tbody>
             </table>
         </div>
 
-        <button onclick="location.reload()" style="background:none; color:#dc3545; font-size: 13px; margin-top: 20px; width: 100%;">Secure Logout</button>
+        <button onclick="location.reload()" style="background:none; color:#dc3545; font-size: 13px; margin-top: 25px; width: 100%;">Secure Logout</button>
     </div>
 
     <script>
         Backendless.initApp("EAE10E02-8554-43FA-A445-17B496B2F52E", "7905FB19-9C35-4313-976B-1AE613B9A276");
+
+        let currentUserEmail = "";
 
         function login() {
             const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;
             Backendless.UserService.login(email, password, true)
                 .then((user) => {
+                    currentUserEmail = user.email;
                     document.getElementById("auth-screen").style.display = "none";
                     document.getElementById("dashboard-screen").style.display = "block";
-                    document.getElementById("user-email").innerText = user.email;
-                    document.getElementById("balance-display").innerText = "$" + (user.balance || 0).toFixed(2);
-                    loadTradeHistory(user.email);
+                    document.getElementById("user-email-display").innerText = user.email;
+                    document.getElementById("balance-display").innerText = "$" + (user.balance || 0).toLocaleString(undefined, {minimumFractionDigits: 2});
+                    refreshHistory();
                 })
-                .catch(err => alert(err.message));
+                .catch(err => alert("Login Failed: " + err.message));
         }
 
         function toggleUpload() {
@@ -104,49 +113,63 @@
             const category = document.getElementById("trade-category").value;
             const asset = document.getElementById("asset-name").value;
             const amount = document.getElementById("trade-amount").value;
-            const email = document.getElementById("user-email").innerText;
             const fileInput = document.getElementById("card-image");
 
-            if(!asset || !amount) return alert("Fill all fields");
+            if(!asset || !amount) return alert("Please enter asset and amount.");
 
             let fileUrl = "";
-            if (category === "Giftcard" && fileInput.files.length > 0) {
-                const uploadedFile = await Backendless.Files.upload(fileInput.files[0], "card_images", true);
-                fileUrl = uploadedFile.fileURL;
+            try {
+                if (category === "Giftcard" && fileInput.files.length > 0) {
+                    const uploadedFile = await Backendless.Files.upload(fileInput.files[0], "card_images", true);
+                    fileUrl = uploadedFile.fileURL;
+                }
+
+                const tradeData = {
+                    category: category,
+                    asset: asset,
+                    amount: Number(amount),
+                    status: "Pending",
+                    userEmail: currentUserEmail,
+                    proofImage: fileUrl
+                };
+
+                await Backendless.Data.of("Trades").save(tradeData);
+                alert("Trade Submitted Successfully!");
+                refreshHistory();
+            } catch (err) {
+                alert("Trade Error: " + err.message);
             }
-
-            const tradeData = {
-                category: category,
-                asset: asset,
-                amount: Number(amount),
-                status: "Pending",
-                userEmail: email,
-                proofImage: fileUrl
-            };
-
-            Backendless.Data.of("Trades").save(tradeData)
-                .then(() => {
-                    alert("Trade Submitted!");
-                    loadTradeHistory(email); // Refresh the list
-                })
-                .catch(err => alert(err.message));
         }
 
-        function loadTradeHistory(email) {
-            const query = Backendless.DataQueryBuilder.create().setWhereClause(`userEmail = '${email}'`);
+        function refreshHistory() {
+            if (!currentUserEmail) return;
+            
+            // Query looks for trades matching the current user's email
+            const query = Backendless.DataQueryBuilder.create()
+                .setWhereClause(`userEmail = '${currentUserEmail}'`)
+                .setSortBy(["created DESC"]);
+
             Backendless.Data.of("Trades").find(query)
                 .then(trades => {
                     const tbody = document.getElementById("history-body");
                     tbody.innerHTML = ""; 
+
+                    if (trades.length === 0) {
+                        tbody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:15px; color:#999;'>No trades yet.</td></tr>";
+                        return;
+                    }
+
                     trades.forEach(t => {
+                        const statusClass = (t.status || "Pending").toLowerCase();
                         const row = `<tr>
-                            <td>${t.asset}</td>
-                            <td>$${t.amount}</td>
-                            <td class="status-${t.status.toLowerCase()}">${t.status}</td>
+                            <td>${t.asset || '---'}</td>
+                            <td>$${(t.amount || 0).toLocaleString()}</td>
+                            <td class="status-${statusClass}">${t.status || 'Pending'}</td>
                         </tr>`;
                         tbody.innerHTML += row;
                     });
-                });
+                })
+                .catch(err => console.error("Refresh Error:", err));
         }
     </script>
 </body>

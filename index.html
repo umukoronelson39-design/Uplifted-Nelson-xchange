@@ -8,22 +8,24 @@
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 15px; margin: 0; }
         .box { width: 100%; max-width: 420px; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 15px; }
-        button { width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 15px; }
+        button { width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.3s; }
         .login-btn { background: #007bff; color: white; }
-        .trade-btn { background: #6f42c1; color: white; margin-top: 10px; }
+        .trade-btn { background: #6f42c1; color: white; }
+        .withdraw-btn { background: #28a745; color: white; margin-top: 10px; }
         .refresh-btn { background: #f8f9fa; color: #007bff; font-size: 11px; padding: 5px 10px; width: auto; margin: 0; border: 1px solid #007bff; border-radius: 5px; }
         .whatsapp-btn { background: #25D366; color: white; margin-top: 20px; font-size: 14px; text-decoration: none; display: flex; align-items: center; justify-content: center; padding: 12px; border-radius: 10px; }
         .wallet-card { background: linear-gradient(135deg, #17a2b8, #117a8b); color: white; padding: 20px; border-radius: 15px; margin: 15px 0; }
-        .trade-section { background: #fdfdfd; padding: 15px; border: 1px solid #eee; border-radius: 12px; margin-top: 20px; text-align: left; }
-        .history-section { margin-top: 25px; text-align: left; }
+        .section { background: #fdfdfd; padding: 15px; border: 1px solid #eee; border-radius: 12px; margin-top: 20px; text-align: left; }
         table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
         th { text-align: left; color: #888; padding-bottom: 5px; border-bottom: 1px solid #eee; }
-        td { padding: 10px 0; border-bottom: 1px solid #f9f9f9; vertical-align: middle; }
+        td { padding: 10px 0; border-bottom: 1px solid #f9f9f9; }
         .status-pending { color: #f39c12; font-weight: bold; }
         .status-completed { color: #27ae60; font-weight: bold; }
         .status-rejected { color: #dc3545; font-weight: bold; }
-        .upload-label { display: block; background: #e9ecef; padding: 10px; border-radius: 8px; border: 1px dashed #ccc; cursor: pointer; text-align: center; margin-top: 5px; font-size: 13px; }
+        .tab-container { display: flex; gap: 10px; margin-top: 10px; }
+        .tab { flex: 1; padding: 10px; font-size: 12px; background: #eee; border-radius: 8px; cursor: pointer; border: none; }
+        .active-tab { background: #007bff; color: white; }
     </style>
 </head>
 <body>
@@ -42,8 +44,13 @@
             <h1 id="balance-display">$0.00</h1>
         </div>
 
-        <div class="trade-section">
-            <h4 style="margin: 0 0 10px 0;">New Trade Request</h4>
+        <div class="tab-container">
+            <button id="trade-tab-btn" class="tab active-tab" onclick="showTab('trade')">Trade</button>
+            <button id="withdraw-tab-btn" class="tab" onclick="showTab('withdraw')">Withdraw</button>
+        </div>
+
+        <div id="trade-section" class="section">
+            <h4 style="margin: 0 0 10px 0;">New Trade</h4>
             <select id="trade-category" onchange="toggleUpload()">
                 <option value="Crypto">Crypto</option>
                 <option value="Giftcard">Gift Card</option>
@@ -52,9 +59,21 @@
             <input id="trade-amount" type="number" placeholder="Amount in $">
             <div id="upload-container" style="display:none;">
                 <input type="file" id="card-image" accept="image/*" style="display:none;">
-                <label for="card-image" class="upload-label">📸 Snap Card Photo</label>
+                <label for="card-image" style="display:block; background:#e9ecef; padding:10px; border-radius:8px; border:1px dashed #ccc; cursor:pointer; text-align:center;">📸 Snap Photo</label>
             </div>
             <button class="trade-btn" onclick="submitTrade()">Submit Trade</button>
+        </div>
+
+        <div id="withdraw-section" class="section" style="display:none;">
+            <h4 style="margin: 0 0 10px 0;">Request Withdrawal</h4>
+            <select id="withdraw-method">
+                <option value="Bank Transfer">Bank Transfer</option>
+                <option value="Crypto Wallet">Crypto Wallet (USDT/BTC)</option>
+                <option value="CashApp/Zelle">CashApp / Zelle</option>
+            </select>
+            <input id="withdraw-amount" type="number" placeholder="Amount to withdraw">
+            <textarea id="withdraw-details" placeholder="Enter Bank info or Wallet Address"></textarea>
+            <button class="withdraw-btn" onclick="submitWithdrawal()">Request Cash Out</button>
         </div>
 
         <div class="history-section">
@@ -63,39 +82,45 @@
                 <button class="refresh-btn" onclick="refreshHistory()">🔄 Refresh</button>
             </div>
             <table>
-                <thead>
-                    <tr><th>Asset</th><th>Amt</th><th>Status</th><th>Del</th></tr>
-                </thead>
+                <thead><tr><th>Asset</th><th>Amt</th><th>Status</th><th>Del</th></tr></thead>
                 <tbody id="history-body"></tbody>
             </table>
         </div>
 
-        <a href="https://wa.me/YOURNUMBERHERE" class="whatsapp-btn" target="_blank">💬 Chat Support</a>
+        <a href="https://wa.me/YOURNUMBER" class="whatsapp-btn" target="_blank">💬 Chat Support</a>
         <button onclick="location.reload()" style="background:none; color:#dc3545; font-size: 13px; margin-top: 15px; width: 100%;">Logout</button>
     </div>
 
     <script>
-        // Replace with your actual App ID and API Key if they ever change
         Backendless.initApp("EAE10E02-8554-43FA-A445-17B496B2F52E", "7905FB19-9C35-4313-976B-1AE613B9A276");
         let userEmail = "";
+        let currentBalance = 0;
 
         function login() {
             const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;
             Backendless.UserService.login(email, password, true).then(user => {
                 userEmail = user.email;
+                currentBalance = user.balance || 0;
                 document.getElementById("auth-screen").style.display = "none";
                 document.getElementById("dashboard-screen").style.display = "block";
                 document.getElementById("user-email-display").innerText = user.email;
-                updateBalanceDisplay(user.balance);
+                updateBalanceDisplay(currentBalance);
                 refreshHistory();
-                // Check for updates every 30 seconds
                 setInterval(refreshHistory, 30000);
             }).catch(err => alert(err.message));
         }
 
         function updateBalanceDisplay(amt) {
-            document.getElementById("balance-display").innerText = "$" + (amt || 0).toLocaleString(undefined, {minimumFractionDigits: 2});
+            currentBalance = amt || 0;
+            document.getElementById("balance-display").innerText = "$" + currentBalance.toLocaleString(undefined, {minimumFractionDigits: 2});
+        }
+
+        function showTab(type) {
+            document.getElementById('trade-section').style.display = type === 'trade' ? 'block' : 'none';
+            document.getElementById('withdraw-section').style.display = type === 'withdraw' ? 'block' : 'none';
+            document.getElementById('trade-tab-btn').className = type === 'trade' ? 'tab active-tab' : 'tab';
+            document.getElementById('withdraw-tab-btn').className = type === 'withdraw' ? 'tab active-tab' : 'tab';
         }
 
         function toggleUpload() {
@@ -105,82 +130,64 @@
         async function submitTrade() {
             const asset = document.getElementById("asset-name").value;
             const amount = document.getElementById("trade-amount").value;
-            if(!asset || !amount) return alert("Fill all fields");
-            
+            if(!asset || !amount) return alert("Fill fields");
             let fileUrl = "";
             const fileInput = document.getElementById("card-image");
             if (fileInput.files.length > 0) {
-                try {
-                    const uploaded = await Backendless.Files.upload(fileInput.files[0], "trades", true);
-                    fileUrl = uploaded.fileURL;
-                } catch(e) { console.log("File error", e); }
+                const uploaded = await Backendless.Files.upload(fileInput.files[0], "trades", true);
+                fileUrl = uploaded.fileURL;
             }
+            const trade = { asset: asset, amount: Number(amount), status: "Pending", userEmail: userEmail, proofImage: fileUrl, paidOut: false };
+            Backendless.Data.of("Trades").save(trade).then(() => { alert("Trade Sent!"); refreshHistory(); });
+        }
 
-            const trade = {
-                asset: asset, 
-                amount: Number(amount),
-                status: "Pending",
-                userEmail: userEmail,
-                paidOut: false
-            };
-            if(fileUrl) trade.proofImage = fileUrl;
+        async function submitWithdrawal() {
+            const amt = Number(document.getElementById("withdraw-amount").value);
+            const details = document.getElementById("withdraw-details").value;
+            const method = document.getElementById("withdraw-method").value;
 
-            Backendless.Data.of("Trades").save(trade).then(() => {
-                alert("Trade Sent!");
-                refreshHistory();
-            }).catch(err => alert("Save error: " + err.message));
+            if (amt <= 0 || !details) return alert("Enter valid amount and details.");
+            if (amt > currentBalance) return alert("Insufficient balance!");
+
+            const request = { amount: amt, method: method, details: details, userEmail: userEmail, status: "Pending" };
+            
+            // Deduct balance immediately
+            const user = await Backendless.UserService.getCurrentUser();
+            user.balance = currentBalance - amt;
+            await Backendless.UserService.update(user);
+            updateBalanceDisplay(user.balance);
+
+            await Backendless.Data.of("Withdrawals").save(request);
+            alert("Withdrawal request sent!");
+            showTab('trade');
         }
 
         function refreshHistory() {
             if(!userEmail) return;
-            // Case-sensitive check for the whereClause
             const query = Backendless.DataQueryBuilder.create().setWhereClause(`userEmail = '${userEmail}'`).setSortBy(["created DESC"]);
-            
             Backendless.Data.of("Trades").find(query).then(trades => {
                 const tbody = document.getElementById("history-body");
                 tbody.innerHTML = "";
-                
                 trades.forEach(t => {
-                    // Logic to handle both Capital and lowercase column names
-                    const amt = t.amount !== undefined ? t.amount : t.Amount || 0;
-                    const assetName = t.asset || t.Asset || "---";
+                    const amt = t.amount || t.Amount || 0;
                     const stat = t.status || t.Status || "Pending";
-                    const isPaid = t.paidOut !== undefined ? t.paidOut : t.PaidOut || false;
-
-                    // Trigger auto-payout only when you mark it Completed
-                    if (stat === "Completed" && isPaid !== true) { 
-                        processPayout(t, amt); 
-                    }
-                    
+                    const isPaid = t.paidOut || t.PaidOut || false;
+                    if (stat === "Completed" && isPaid !== true) { processPayout(t, amt); }
                     const isFinished = (stat === "Completed" || stat === "Rejected");
-                    const actionBtn = isFinished 
-                        ? `<button onclick="deleteTrade('${t.objectId}')" style="background:none; border:none; cursor:pointer; font-size:16px;">🗑️</button>` 
-                        : "🔒";
-                    
-                    tbody.innerHTML += `<tr>
-                        <td>${assetName}</td>
-                        <td>$${amt}</td>
-                        <td class="status-${stat.toLowerCase()}">${stat}</td>
-                        <td style="text-align:center">${actionBtn}</td>
-                    </tr>`;
+                    const actionBtn = isFinished ? `<button onclick="deleteTrade('${t.objectId}')" style="color:red; background:none; border:none;">Delete</button>` : "🔒";
+                    tbody.innerHTML += `<tr><td>${t.asset || t.Asset}</td><td>$${amt}</td><td class="status-${stat.toLowerCase()}">${stat}</td><td>${actionBtn}</td></tr>`;
                 });
-            }).catch(err => console.log("Refresh Error:", err));
+            });
         }
 
         function deleteTrade(id) {
-            if (confirm("Delete this from history?")) {
-                Backendless.Data.of("Trades").remove({ objectId: id }).then(() => {
-                    refreshHistory();
-                }).catch(err => alert("Delete error: " + err.message));
-            }
+            if (confirm("Delete?")) Backendless.Data.of("Trades").remove({ objectId: id }).then(() => refreshHistory());
         }
 
         function processPayout(trade, amt) {
             Backendless.UserService.getCurrentUser().then(user => {
-                const currentBal = user.balance || 0;
-                user.balance = currentBal + amt;
+                user.balance = (user.balance || 0) + amt;
                 Backendless.UserService.update(user).then(upd => {
-                    // Mark as paid in database to prevent double-payout
                     trade.paidOut = true;
                     Backendless.Data.of("Trades").save(trade);
                     updateBalanceDisplay(upd.balance);

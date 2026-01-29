@@ -1,77 +1,107 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nelson Xchange | Professional OTC</title>
+    <title>Nelson Xchange | Premium OTC</title>
     <script src="https://api.backendless.com/sdk/js/latest/backendless.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 15px; margin: 0; }
-        .box { width: 100%; max-width: 430px; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
-        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 14px; }
-        button { width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
-        .login-btn { background: #007bff; color: white; }
-        .trade-btn { background: #6f42c1; color: white; }
-        .withdraw-btn { background: #28a745; color: white; }
-        .refresh-btn { background: #f8f9fa; color: #007bff; font-size: 11px; padding: 5px 10px; width: auto; margin: 0; border: 1px solid #007bff; border-radius: 5px; }
-        .wallet-card { background: linear-gradient(135deg, #17a2b8, #117a8b); color: white; padding: 20px; border-radius: 15px; margin: 15px 0; }
-        .section { background: #fdfdfd; padding: 15px; border: 1px solid #eee; border-radius: 12px; margin-top: 20px; text-align: left; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
-        th { text-align: left; color: #888; padding-bottom: 5px; border-bottom: 1px solid #eee; }
-        td { padding: 10px 0; border-bottom: 1px solid #f9f9f9; }
-        .status-pending { color: #f39c12; font-weight: bold; }
-        .status-completed { color: #27ae60; font-weight: bold; }
-        .status-rejected { color: #dc3545; font-weight: bold; }
-        .tab-container { display: flex; gap: 8px; margin-top: 10px; }
-        .tab { flex: 1; padding: 10px; font-size: 12px; background: #eee; border-radius: 8px; cursor: pointer; border: none; font-weight: 600; }
-        .active-tab { background: #007bff; color: white; }
-        .whatsapp-link { background: #25D366; color: white; text-decoration: none; display: block; padding: 12px; border-radius: 10px; margin-top: 15px; font-size: 14px; font-weight: bold; }
+        :root {
+            --primary: #4338ca;
+            --primary-hover: #3730a3;
+            --success: #059669;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-main); display: flex; justify-content: center; padding: 20px; margin: 0; }
+        .box { width: 100%; max-width: 440px; background: var(--card); padding: 30px; border-radius: 24px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); text-align: center; }
+        
+        /* Logo Styling */
+        .logo-circle { width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary), #6366f1); border-radius: 18px; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; color: white; font-weight: 800; font-size: 24px; box-shadow: 0 10px 15px rgba(67, 56, 202, 0.2); }
+        
+        h2 { font-weight: 800; letter-spacing: -0.025em; margin-bottom: 24px; color: var(--text-main); }
+        input, select, textarea { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #e2e8f0; border-radius: 12px; background: #fcfcfd; font-size: 15px; transition: all 0.2s; box-sizing: border-box; }
+        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.1); }
+        
+        button { width: 100%; padding: 16px; margin: 10px 0; border: none; border-radius: 12px; cursor: pointer; font-weight: 700; transition: all 0.2s; }
+        button:active { transform: scale(0.98); }
+        
+        .login-btn, .trade-btn { background: var(--primary); color: white; }
+        .withdraw-btn { background: var(--success); color: white; }
+        
+        .wallet-card { background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%); color: white; padding: 24px; border-radius: 20px; margin: 20px 0; text-align: left; box-shadow: 0 10px 15px -3px rgba(67, 56, 202, 0.3); }
+        .wallet-card h1 { font-size: 32px; margin: 8px 0 0 0; font-weight: 700; }
+        
+        .tab-container { display: flex; background: #f1f5f9; padding: 4px; border-radius: 14px; margin-bottom: 20px; }
+        .tab { flex: 1; padding: 10px; font-size: 13px; background: transparent; border-radius: 10px; color: var(--text-muted); border: none; font-weight: 600; cursor: pointer; }
+        .active-tab { background: var(--card); color: var(--primary); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        
+        .section { background: #fff; padding: 18px; border: 1px solid #f1f5f9; border-radius: 16px; margin-top: 20px; text-align: left; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+        th { text-align: left; font-size: 11px; text-transform: uppercase; color: var(--text-muted); padding-bottom: 10px; }
+        td { padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
+
+        .status-badge { font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; text-transform: capitalize; }
+        .status-pending { background: #fffbeb; color: var(--warning); }
+        .status-completed { background: #ecfdf5; color: var(--success); }
+        .status-rejected { background: #fef2f2; color: var(--danger); }
+        
+        .whatsapp-link { background: #25D366; color: white; text-decoration: none; display: flex; align-items: center; justify-content: center; padding: 14px; border-radius: 12px; margin-top: 20px; font-weight: 600; }
     </style>
 </head>
 <body>
 
     <div id="auth-screen" class="box">
+        <div class="logo-circle">NX</div>
         <h2>Nelson Xchange</h2>
         <input id="email" type="email" placeholder="Email Address">
         <input id="password" type="password" placeholder="Password">
-        <button class="login-btn" onclick="login()">Sign In to Trade</button>
+        <button class="login-btn" onclick="login()">Sign In to Dashboard</button>
     </div>
 
     <div id="dashboard-screen" class="box" style="display:none;">
-        <p id="user-email-display" style="color: #007bff; font-size: 12px; font-weight: 600; margin:0;"></p>
+        <div class="logo-circle" style="width:40px; height:40px; font-size:16px; margin-bottom:10px;">NX</div>
+        <p id="user-email-display" style="color: var(--text-muted); font-size: 12px; font-weight: 600; margin:0;"></p>
+        
         <div class="wallet-card">
-            <p style="margin:0; font-size: 11px; opacity: 0.9;">AVAILABLE BALANCE</p>
+            <p style="margin:0; font-size: 11px; opacity: 0.9; font-weight: 600;">TOTAL BALANCE</p>
             <h1 id="balance-display">$0.00</h1>
         </div>
 
         <div class="tab-container">
-            <button id="trade-tab-btn" class="tab active-tab" onclick="showTab('trade')">Sell Crypto/Cards</button>
+            <button id="trade-tab-btn" class="tab active-tab" onclick="showTab('trade')">Trade Asset</button>
             <button id="withdraw-tab-btn" class="tab" onclick="showTab('withdraw')">Cash Out</button>
         </div>
 
         <div id="trade-tab-ui">
             <div class="section">
-                <h4 style="margin: 0 0 10px 0;">New Trade</h4>
+                <h4 style="margin: 0 0 10px 0;">Submit New Trade</h4>
                 <select id="trade-category" onchange="toggleUpload()">
-                    <option value="Crypto">Crypto</option>
+                    <option value="Crypto">Crypto (BTC/USDT)</option>
                     <option value="Giftcard">Gift Card</option>
                 </select>
-                <input id="asset-name" placeholder="Asset (e.g. BTC or Amazon)">
-                <input id="trade-amount" type="number" placeholder="Amount in $">
+                <input id="asset-name" placeholder="Asset Name">
+                <input id="trade-amount" type="number" placeholder="Value in USD">
                 <div id="upload-container" style="display:none;">
                     <input type="file" id="card-image" accept="image/*" style="display:none;">
-                    <label for="card-image" style="display:block; background:#e9ecef; padding:10px; border-radius:8px; border:1px dashed #ccc; cursor:pointer; text-align:center; font-size: 12px;">📸 Upload Card Image</label>
+                    <label for="card-image" style="display:block; background:#f1f5f9; padding:12px; border-radius:10px; border:1px dashed #cbd5e1; cursor:pointer; text-align:center; font-size: 13px; color: var(--text-muted);">📸 Click to Upload Image</label>
                 </div>
-                <button class="trade-btn" onclick="submitTrade()">Submit Trade</button>
+                <button class="trade-btn" onclick="submitTrade()">Send Trade Request</button>
             </div>
 
             <div class="section">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <h4 style="margin: 0;">Trade History</h4>
-                    <button class="refresh-btn" onclick="refreshHistory()">🔄 Refresh</button>
+                    <button class="tab" style="width:auto; padding:5px 10px; background:#f1f5f9; color:var(--primary);" onclick="refreshHistory()">🔄 Sync</button>
                 </div>
-                <table>
-                    <thead><tr><th>Asset</th><th>Amt</th><th>Status</th><th>Action</th></tr></thead>
+                <table id="trade-table">
+                    <thead><tr><th>Asset</th><th>Amt</th><th>Status</th><th>Del</th></tr></thead>
                     <tbody id="trade-history-body"></tbody>
                 </table>
             </div>
@@ -79,15 +109,15 @@
 
         <div id="withdraw-tab-ui" style="display:none;">
             <div class="section">
-                <h4 style="margin: 0 0 10px 0;">Withdraw Funds</h4>
+                <h4 style="margin: 0 0 10px 0;">Withdrawal Details</h4>
                 <select id="withdraw-method">
-                    <option value="Bank Transfer">Bank Transfer</option>
-                    <option value="Crypto Wallet">Crypto Wallet</option>
-                    <option value="CashApp/Zelle">CashApp / Zelle</option>
+                    <option value="Bank">Bank Transfer</option>
+                    <option value="Crypto">Crypto Wallet</option>
+                    <option value="CashApp">CashApp / Zelle</option>
                 </select>
-                <input id="withdraw-amount" type="number" placeholder="Amount to withdraw">
-                <textarea id="withdraw-details" placeholder="Account Details / Wallet Address"></textarea>
-                <button class="withdraw-btn" onclick="submitWithdrawal()">Request Withdrawal</button>
+                <input id="withdraw-amount" type="number" placeholder="Withdrawal Amount ($)">
+                <textarea id="withdraw-details" rows="3" placeholder="Account Name, Number or Wallet Address"></textarea>
+                <button class="withdraw-btn" onclick="submitWithdrawal()">Process Cash Out</button>
             </div>
 
             <div class="section">
@@ -99,8 +129,8 @@
             </div>
         </div>
 
-        <a href="https://wa.me/YOURNUMBER" class="whatsapp-link" target="_blank">💬 Contact Nelson Support</a>
-        <button onclick="location.reload()" style="background:none; color:#dc3545; font-size: 13px; margin-top: 15px; width: 100%;">Logout</button>
+        <a href="https://wa.me/YOURNUMBER" class="whatsapp-link" target="_blank">💬 Support Chat</a>
+        <button onclick="location.reload()" style="background:none; color:var(--danger); font-size: 12px; margin-top: 15px; font-weight: 600;">Secure Logout</button>
     </div>
 
     <script>
@@ -116,7 +146,7 @@
                 currentBalance = user.balance || 0;
                 document.getElementById("auth-screen").style.display = "none";
                 document.getElementById("dashboard-screen").style.display = "block";
-                document.getElementById("user-email-display").innerText = user.email;
+                document.getElementById("user-email-display").innerText = userEmail;
                 updateBalanceDisplay(currentBalance);
                 refreshHistory();
                 setInterval(refreshHistory, 30000);
@@ -142,37 +172,28 @@
         async function submitTrade() {
             const asset = document.getElementById("asset-name").value;
             const amount = Number(document.getElementById("trade-amount").value);
-            if(!asset || amount <= 0) return alert("Enter valid asset and amount");
-            
+            if(!asset || amount <= 0) return alert("Enter valid details");
             let fileUrl = "";
             const fileInput = document.getElementById("card-image");
             if (fileInput.files.length > 0) {
                 const uploaded = await Backendless.Files.upload(fileInput.files[0], "trades", true);
                 fileUrl = uploaded.fileURL;
             }
-
             const trade = { asset: asset, amount: amount, status: "Pending", userEmail: userEmail, proofImage: fileUrl, paidOut: false };
-            Backendless.Data.of("Trades").save(trade).then(() => {
-                alert("Trade submitted!");
-                refreshHistory();
-            });
+            Backendless.Data.of("Trades").save(trade).then(() => { alert("Trade submitted!"); refreshHistory(); });
         }
 
         async function submitWithdrawal() {
             const amt = Number(document.getElementById("withdraw-amount").value);
             const details = document.getElementById("withdraw-details").value;
-            const method = document.getElementById("withdraw-method").value;
+            if (amt <= 0 || amt > currentBalance || !details) return alert("Check balance and details");
 
-            if (amt <= 0 || !details) return alert("Fill all details");
-            if (amt > currentBalance) return alert("Insufficient balance");
-
-            // Deduct balance immediately for safety
             const user = await Backendless.UserService.getCurrentUser();
             user.balance = currentBalance - amt;
             await Backendless.UserService.update(user);
             updateBalanceDisplay(user.balance);
 
-            const request = { amount: amt, method: method, details: details, userEmail: userEmail, status: "Pending" };
+            const request = { amount: amt, method: document.getElementById("withdraw-method").value, details: details, userEmail: userEmail, status: "Pending" };
             await Backendless.Data.of("Withdrawals").save(request);
             alert("Withdrawal request sent!");
             refreshHistory();
@@ -181,42 +202,33 @@
         function refreshHistory() {
             if(!userEmail) return;
             const where = `userEmail = '${userEmail}'`;
-            const order = ["created DESC"];
+            const query = Backendless.DataQueryBuilder.create().setWhereClause(where).setSortBy(["created DESC"]);
 
-            // Fetch Trades
-            Backendless.Data.of("Trades").find(Backendless.DataQueryBuilder.create().setWhereClause(where).setSortBy(order))
-                .then(trades => {
-                    const tbody = document.getElementById("trade-history-body");
-                    tbody.innerHTML = "";
-                    trades.forEach(t => {
-                        const amt = t.amount || t.Amount || 0;
-                        const stat = t.status || t.Status || "Pending";
-                        const isPaid = t.paidOut || t.PaidOut || false;
-                        
-                        if (stat === "Completed" && isPaid !== true) { processPayout(t, amt); }
-
-                        const canDel = (stat === "Completed" || stat === "Rejected");
-                        const btn = canDel ? `<button onclick="deleteRow('Trades', '${t.objectId}')" style="color:red; background:none; border:none;">Delete</button>` : "🔒";
-                        
-                        tbody.innerHTML += `<tr><td>${t.asset || t.Asset}</td><td>$${amt}</td><td class="status-${stat.toLowerCase()}">${stat}</td><td>${btn}</td></tr>`;
-                    });
+            Backendless.Data.of("Trades").find(query).then(trades => {
+                const tbody = document.getElementById("trade-history-body");
+                tbody.innerHTML = "";
+                trades.forEach(t => {
+                    const amt = t.amount || t.Amount || 0;
+                    const stat = t.status || t.Status || "Pending";
+                    const isPaid = t.paidOut || t.PaidOut || false;
+                    if (stat === "Completed" && isPaid !== true) { processPayout(t, amt); }
+                    const canDel = (stat === "Completed" || stat === "Rejected");
+                    const btn = canDel ? `<button onclick="deleteRow('Trades', '${t.objectId}')" style="color:var(--danger); background:none; border:none; cursor:pointer;">🗑️</button>` : "🔒";
+                    tbody.innerHTML += `<tr><td>${t.asset || t.Asset}</td><td>$${amt}</td><td><span class="status-badge status-${stat.toLowerCase()}">${stat}</span></td><td>${btn}</td></tr>`;
                 });
+            });
 
-            // Fetch Withdrawals
-            Backendless.Data.of("Withdrawals").find(Backendless.DataQueryBuilder.create().setWhereClause(where).setSortBy(order))
-                .then(list => {
-                    const tbody = document.getElementById("withdraw-history-body");
-                    tbody.innerHTML = "";
-                    list.forEach(w => {
-                        tbody.innerHTML += `<tr><td>${w.method}</td><td>$${w.amount}</td><td class="status-${w.status.toLowerCase()}">${w.status}</td></tr>`;
-                    });
+            Backendless.Data.of("Withdrawals").find(query).then(list => {
+                const tbody = document.getElementById("withdraw-history-body");
+                tbody.innerHTML = "";
+                list.forEach(w => {
+                    tbody.innerHTML += `<tr><td>${w.method}</td><td>$${w.amount}</td><td><span class="status-badge status-${w.status.toLowerCase()}">${w.status}</span></td></tr>`;
                 });
+            });
         }
 
         function deleteRow(table, id) {
-            if (confirm("Delete this record?")) {
-                Backendless.Data.of(table).remove({ objectId: id }).then(() => refreshHistory());
-            }
+            if (confirm("Delete this record?")) Backendless.Data.of(table).remove({ objectId: id }).then(() => refreshHistory());
         }
 
         function processPayout(trade, amt) {

@@ -5,105 +5,99 @@
     <title>Nelson Xchange</title>
     <script src="https://api.backendless.com/sdk/js/latest/backendless.min.js"></script>
     <style>
-        body { font-family: Arial; background: #f4f6f9; display: flex; justify-content: center; padding-top: 50px; }
-        .box { width: 350px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; margin: 10px 0; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        body { font-family: 'Segoe UI', Arial; background: #f0f2f5; display: flex; justify-content: center; padding-top: 40px; }
+        .box { width: 340px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 12px; margin: 10px 0; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; }
         
-        /* Button Colors */
-        .primary-btn { background: #0b5ed7; color: white; }
-        .secondary-btn { background: #e9ecef; color: #333; }
+        .login-btn { background: #007bff; color: white; }
+        .reg-btn { background: #6c757d; color: white; }
         .logout-btn { background: #dc3545; color: white; margin-top: 20px; }
         
-        /* Dashboard specific styling */
-        .balance-card { background: #f8f9fa; border: 1px solid #e0e0e0; padding: 20px; border-radius: 10px; margin: 15px 0; }
-        .balance-amount { font-size: 28px; color: #0b5ed7; margin: 5px 0; }
-        #status { font-size: 14px; margin-top: 10px; }
+        .wallet-card { background: #17a2b8; color: white; padding: 20px; border-radius: 12px; margin: 20px 0; }
+        #status { font-size: 14px; margin-top: 10px; color: #555; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div id="auth-screen" class="box">
-        <h3>Nelson Xchange</h3>
-        <p style="color: #666; font-size: 14px;">Welcome back! Please sign in.</p>
-        
-        <input id="email" type="email" placeholder="Email Address">
+        <h2 style="color:#333">Nelson Xchange</h2>
+        <input id="email" type="email" placeholder="Email">
         <input id="password" type="password" placeholder="Password">
         
-        <button class="primary-btn" onclick="login()">Login</button>
-        <button class="secondary-btn" onclick="register()">Create New Account</button>
+        <button class="login-btn" onclick="login()">Login</button>
+        <button class="reg-btn" onclick="register()">Create Account</button>
         
-        <p id="status"></p>
+        <div id="status">Ready</div>
     </div>
 
     <div id="dashboard-screen" class="box" style="display:none;">
-        <h3>My Wallet</h3>
-        <p id="user-display" style="font-size: 14px; color: #555;"></p>
+        <h3 style="margin-bottom:5px;">My Account</h3>
+        <p id="user-email" style="color: #666; font-size: 14px; margin-top:0;"></p>
         
-        <div class="balance-card">
-            <p style="margin:0; font-size: 12px; color: #888;">TOTAL BALANCE</p>
-            <h2 class="balance-amount">$0.00</h2>
+        <div class="wallet-card">
+            <p style="margin:0; font-size: 12px; opacity: 0.9;">AVAILABLE BALANCE</p>
+            <h1 style="margin:5px 0;">$500.00</h1>
         </div>
 
-        <div style="text-align: left; background: #fff; padding: 10px;">
-            <p>💰 <strong>Recent Activity:</strong> No transactions yet.</p>
-            <p>📈 <strong>Market:</strong> Bitcoin +2.4%</p>
+        <div style="text-align:left; font-size: 14px; line-height: 1.6;">
+            <div>✅ Identity Verified</div>
+            <div>💳 Wallet Connected</div>
         </div>
 
-        <button class="logout-btn" onclick="logout()">Secure Logout</button>
+        <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
 
     <script>
-        // Initialize Backendless
+        // Use your working Keys
         Backendless.initApp("EAE10E02-8554-43FA-A445-17B496B2F52E", "7905FB19-9C35-4313-976B-1AE613B9A276");
 
-        const statusMsg = document.getElementById("status");
+        const statusDiv = document.getElementById("status");
+        const authScreen = document.getElementById("auth-screen");
+        const dashScreen = document.getElementById("dashboard-screen");
 
-        // Helper to show messages
-        function showMsg(text, color) {
-            statusMsg.innerText = text;
-            statusMsg.style.color = color;
+        function updateStatus(msg, color = "black") {
+            statusDiv.innerText = msg;
+            statusDiv.style.color = color;
         }
 
         function register() {
             const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;
+            if(!email || !password) return updateStatus("Missing fields", "red");
 
-            if(!email || !password) return showMsg("Fill in all fields!", "red");
-
-            showMsg("Registering...", "blue");
-
+            updateStatus("Creating account...", "blue");
             let user = new Backendless.User();
             user.email = email;
             user.password = password;
 
             Backendless.UserService.register(user)
-                .then(() => showMsg("Account Created! You can now Login.", "green"))
-                .catch(err => showMsg(err.message, "red"));
+                .then(() => updateStatus("Success! Now click Login.", "green"))
+                .catch(err => updateStatus(err.message, "red"));
         }
 
         function login() {
             const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;
-
-            showMsg("Checking credentials...", "blue");
+            
+            updateStatus("Logging in...", "blue");
 
             Backendless.UserService.login(email, password, true)
                 .then((user) => {
-                    // SUCCESS! Hide the login screen and show the dashboard
-                    document.getElementById("auth-screen").style.display = "none";
-                    document.getElementById("dashboard-screen").style.display = "block";
+                    // SWITCH SCREENS
+                    authScreen.style.display = "none";
+                    dashScreen.style.display = "block";
                     
-                    // Put the user's email on the screen
-                    document.getElementById("user-display").innerText = user.email;
+                    // SHOW EMAIL
+                    document.getElementById("user-email").innerText = user.email;
                 })
-                .catch(err => showMsg("Login Failed: " + err.message, "red"));
+                .catch(err => updateStatus("Error: " + err.message, "red"));
         }
 
         function logout() {
             Backendless.UserService.logout()
-                .then(() => location.reload()) // Just reloads the page to go back to login
-                .catch(err => alert(err.message));
+                .then(() => location.reload())
+                .catch(err => updateStatus(err.message, "red"));
         }
     </script>
 

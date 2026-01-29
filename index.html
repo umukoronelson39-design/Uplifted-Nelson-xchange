@@ -3,143 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nelson Xchange</title>
+    <title>Nelson Xchange | Trade</title>
     <script src="https://api.backendless.com/sdk/js/latest/backendless.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 20px; margin: 0; }
-        .box { width: 100%; max-width: 360px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; margin-top: 20px; }
-        input { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 15px; transition: 0.2s; }
+        .box { width: 100%; max-width: 400px; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 15px; }
+        button { width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
         
         .login-btn { background: #007bff; color: white; }
-        .reg-btn { background: #6c757d; color: white; }
-        .deposit-btn { background: #28a745; color: white; flex: 1; }
-        .withdraw-btn { background: #ffc107; color: #333; flex: 1; }
-        .logout-btn { background: #dc3545; color: white; margin-top: 25px; }
+        .trade-btn { background: #6f42c1; color: white; margin-top: 10px; }
+        .wallet-card { background: linear-gradient(135deg, #17a2b8, #117a8b); color: white; padding: 20px; border-radius: 15px; margin: 15px 0; }
         
-        .wallet-card { background: linear-gradient(135deg, #17a2b8, #117a8b); color: white; padding: 25px; border-radius: 15px; margin: 20px 0; box-shadow: 0 4px 15px rgba(23, 162, 184, 0.3); }
-        .balance-label { margin: 0; font-size: 12px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; }
-        .balance-amount { margin: 5px 0; font-size: 32px; }
-        
-        #status { font-size: 14px; margin-top: 15px; min-height: 20px; font-weight: 500; }
-        .flex-row { display: flex; gap: 10px; }
-        .info-row { text-align: left; font-size: 14px; color: #555; margin-top: 15px; line-height: 1.8; }
+        #status { font-size: 13px; margin-top: 10px; font-weight: 500; }
+        .trade-section { background: #f8f9fa; padding: 15px; border-radius: 12px; margin-top: 20px; text-align: left; }
     </style>
 </head>
 <body>
 
     <div id="auth-screen" class="box">
-        <h2 style="color:#222; margin-bottom: 5px;">Nelson Xchange</h2>
-        <p style="color:#777; font-size: 14px; margin-bottom: 20px;">Secure Digital Assets</p>
-        
+        <h2>Nelson Xchange</h2>
         <input id="email" type="email" placeholder="Email Address">
         <input id="password" type="password" placeholder="Password">
-        
-        <button class="login-btn" onclick="login()">Login</button>
-        <button class="reg-btn" onclick="register()">Create Account</button>
-        
-        <div id="status">Welcome</div>
+        <button class="login-btn" onclick="login()">Login to Trade</button>
+        <div id="status">Ready to trade</div>
     </div>
 
     <div id="dashboard-screen" class="box" style="display:none;">
-        <h3 style="margin-bottom:5px;">My Account</h3>
-        <p id="user-email" style="color: #007bff; font-size: 14px; margin-top:0; font-weight: 500;"></p>
+        <h3 id="user-email" style="color: #007bff; font-size: 14px;"></h3>
         
         <div class="wallet-card">
-            <p class="balance-label">Available Balance</p>
-            <h1 id="balance-display" class="balance-amount">$0.00</h1>
+            <p style="margin:0; font-size: 12px; opacity: 0.9;">AVAILABLE BALANCE</p>
+            <h1 id="balance-display" style="margin:5px 0;">$0.00</h1>
         </div>
 
-        <p style="font-size: 13px; color: #666; font-weight: bold; margin-bottom: 5px;">Quick Actions:</p>
-        <div class="flex-row">
-            <button class="deposit-btn" onclick="updateBalance(100)">+$100</button>
-            <button class="deposit-btn" onclick="updateBalance(500)">+$500</button>
-        </div>
-        <div class="flex-row">
-            <button class="withdraw-btn" onclick="updateBalance(-100)">-$100 (Withdraw)</button>
+        <div class="trade-section">
+            <h4 style="margin-top:0;">Trade Center</h4>
+            
+            <label style="font-size: 12px;">I want to:</label>
+            <select id="trade-type">
+                <option value="Buy Crypto">Buy Crypto (BTC, ETH, USDT)</option>
+                <option value="Sell Crypto">Sell Crypto</option>
+                <option value="Sell Giftcard">Sell Gift Card (Amazon, Steam, etc.)</option>
+            </select>
+
+            <input id="asset-name" placeholder="e.g. Bitcoin or iTunes Card">
+            <input id="trade-amount" type="number" placeholder="Amount in USD ($)">
+            
+            <button class="trade-btn" onclick="submitTrade()">Submit Trade Request</button>
         </div>
 
-        <div class="info-row">
-            <div>✅ Identity Verified</div>
-            <div>💳 Global Wallet Active</div>
-            <div>📈 Market Status: <span style="color:green">Bullish</span></div>
-        </div>
-
-        <button class="logout-btn" onclick="logout()">Secure Logout</button>
+        <button onclick="location.reload()" style="background:#eee; color:#333; margin-top:20px;">Logout</button>
     </div>
 
     <script>
-        // API Configuration
         Backendless.initApp("EAE10E02-8554-43FA-A445-17B496B2F52E", "7905FB19-9C35-4313-976B-1AE613B9A276");
-
-        const statusDiv = document.getElementById("status");
-        const authScreen = document.getElementById("auth-screen");
-        const dashScreen = document.getElementById("dashboard-screen");
-
-        function setStatus(msg, color = "black") {
-            statusDiv.innerText = msg;
-            statusDiv.style.color = color;
-        }
-
-        function register() {
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
-            if(!email || !password) return setStatus("Please fill all fields", "red");
-
-            setStatus("Creating account...", "blue");
-            let user = new Backendless.User();
-            user.email = email;
-            user.password = password;
-
-            Backendless.UserService.register(user)
-                .then(() => setStatus("Account Created! You can now Login.", "green"))
-                .catch(err => setStatus(err.message, "red"));
-        }
 
         function login() {
             const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;
             
-            setStatus("Authenticating...", "blue");
-
             Backendless.UserService.login(email, password, true)
                 .then((user) => {
-                    authScreen.style.display = "none";
-                    dashScreen.style.display = "block";
+                    document.getElementById("auth-screen").style.display = "none";
+                    document.getElementById("dashboard-screen").style.display = "block";
                     document.getElementById("user-email").innerText = user.email;
-                    
-                    // Display initial balance from DB
-                    const bal = user.balance || 0;
-                    document.getElementById("balance-display").innerText = "$" + bal.toLocaleString(undefined, {minimumFractionDigits: 2});
-                    setStatus("");
+                    document.getElementById("balance-display").innerText = "$" + (user.balance || 0).toFixed(2);
                 })
-                .catch(err => setStatus("Login Failed: " + err.message, "red"));
+                .catch(err => alert(err.message));
         }
 
-        function updateBalance(amount) {
-            setStatus("Processing...", "blue");
+        function submitTrade() {
+            const type = document.getElementById("trade-type").value;
+            const asset = document.getElementById("asset-name").value;
+            const amount = document.getElementById("trade-amount").value;
 
-            Backendless.UserService.getCurrentUser()
-                .then(user => {
-                    if (!user) throw new Error("Session expired. Please re-login.");
-                    
-                    const currentBal = user.balance || 0;
-                    const newTotal = currentBal + amount;
+            if(!asset || !amount) return alert("Please fill in trade details");
 
-                    if (newTotal < 0) throw new Error("Insufficient funds!");
+            // Save the trade request to a new table called "Trades"
+            const tradeData = {
+                type: type,
+                asset: asset,
+                amount: Number(amount),
+                status: "Pending",
+                userEmail: document.getElementById("user-email").innerText
+            };
 
-                    user.balance = newTotal;
-                    return Backendless.UserService.update(user);
+            Backendless.Data.of("Trades").save(tradeData)
+                .then(() => {
+                    alert("Trade Submitted! Nelson will review and contact you.");
+                    document.getElementById("asset-name").value = "";
+                    document.getElementById("trade-amount").value = "";
                 })
-                .then(updatedUser => {
-                    document.getElementById("balance-display").innerText = "$" + updatedUser.balance.toLocaleString(undefined, {minimumFractionDigits: 2});
-                    setStatus(amount > 0 ? "Deposit successful!" : "Withdrawal successful!", "green");
-                })
-                .catch(err => setStatus(err.message, "red"));
-        }
-
-        function logout() {
-            Backendless.UserService.logout().then(() => location.reload());
+                .catch(err => alert("Error submitting trade: " + err.message));
         }
     </script>
 </body>

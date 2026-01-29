@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Nelson Xchange</title>
+<script src="https://api.backendless.com/sdk/js/latest/backendless.min.js"></script>
+<style>
+body{font-family:Arial;background:#f4f6f9}
+.box{max-width:350px;margin:40px auto;background:white;padding:20px;border-radius:10px}
+input,button{width:100%;padding:10px;margin:5px 0}
+button{background:#0b5ed7;color:white;border:none}
+</style>
+</head>
+<body>
+
+<div class="box">
+<h3>Login</h3>
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+
+<h4>Register</h4>
+<button onclick="register()">Create Account</button>
+</div>
+
+<script>
+Backendless.initApp(
+ EAE10E02-8554-43FA-A445-17B496B2F52E
+ 7905FB19-9C35-4313-976B-1AE613B9A276
+);
+
+function register(){
+ let user = {
+   email: document.getElementById("email").value,
+   password: document.getElementById("password").value
+ };
+
+ Backendless.UserService.register(user)
+ .then(()=>alert("Registered! Now login"))
+ .catch(err=>alert(err.message));
+}
+
+function login(){
+ Backendless.UserService.login(
+   document.getElementById("email").value,
+   document.getElementById("password").value,
+   true
+ )
+ .then(()=>alert("Logged in!"))
+ .catch(err=>alert(err.message));
+}
+</script>
+
+</body>
+</html>

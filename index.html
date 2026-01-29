@@ -1,13 +1,87 @@
-<script>
-    Backendless.initApp("EAE10E02-8554-43FA-A445-17B496B2F52E", "7905FB19-9C35-4313-976B-1AE613B9A276");
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nelson Xchange | Secure OTC</title>
+    <script src="https://api.backendless.com/sdk/js/latest/backendless.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 15px; margin: 0; }
+        .box { width: 100%; max-width: 420px; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 15px; }
+        button { width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        .login-btn { background: #007bff; color: white; }
+        .trade-btn { background: #6f42c1; color: white; margin-top: 10px; }
+        .refresh-btn { background: #f8f9fa; color: #007bff; font-size: 11px; padding: 5px 10px; width: auto; margin: 0; border: 1px solid #007bff; }
+        .whatsapp-btn { background: #25D366; color: white; margin-top: 20px; font-size: 14px; text-decoration: none; display: flex; align-items: center; justify-content: center; padding: 12px; border-radius: 10px; }
+        .wallet-card { background: linear-gradient(135deg, #17a2b8, #117a8b); color: white; padding: 20px; border-radius: 15px; margin: 15px 0; }
+        .trade-section { background: #fdfdfd; padding: 15px; border: 1px solid #eee; border-radius: 12px; margin-top: 20px; text-align: left; }
+        .history-section { margin-top: 25px; text-align: left; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
+        th { text-align: left; color: #888; padding-bottom: 5px; border-bottom: 1px solid #eee; }
+        td { padding: 10px 0; border-bottom: 1px solid #f9f9f9; }
+        .status-pending { color: #f39c12; font-weight: bold; }
+        .status-completed { color: #27ae60; font-weight: bold; }
+        .status-rejected { color: #dc3545; font-weight: bold; }
+        .upload-label { display: block; background: #e9ecef; padding: 10px; border-radius: 8px; border: 1px dashed #ccc; cursor: pointer; text-align: center; margin-top: 5px; font-size: 13px; }
+    </style>
+</head>
+<body>
 
-    let userEmail = "";
+    <div id="auth-screen" class="box">
+        <h2>Nelson Xchange</h2>
+        <input id="email" type="email" placeholder="Email Address">
+        <input id="password" type="password" placeholder="Password">
+        <button class="login-btn" onclick="login()">Sign In to Trade</button>
+    </div>
 
-    function login() {
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
-        Backendless.UserService.login(email, password, true)
-            .then(user => {
+    <div id="dashboard-screen" class="box" style="display:none;">
+        <p id="user-email-display" style="color: #007bff; font-size: 13px; font-weight: 500; margin:0;"></p>
+        <div class="wallet-card">
+            <p style="margin:0; font-size: 11px; opacity: 0.8;">ACCOUNT BALANCE</p>
+            <h1 id="balance-display">$0.00</h1>
+        </div>
+
+        <div class="trade-section">
+            <h4 style="margin: 0 0 10px 0;">New Trade Request</h4>
+            <select id="trade-category" onchange="toggleUpload()">
+                <option value="Crypto">Crypto</option>
+                <option value="Giftcard">Gift Card</option>
+            </select>
+            <input id="asset-name" placeholder="Asset (e.g. BTC or Amazon)">
+            <input id="trade-amount" type="number" placeholder="Amount in $">
+            <div id="upload-container" style="display:none;">
+                <input type="file" id="card-image" accept="image/*" style="display:none;">
+                <label for="card-image" class="upload-label">📸 Snap Card Photo</label>
+            </div>
+            <button class="trade-btn" onclick="submitTrade()">Submit Trade</button>
+        </div>
+
+        <div class="history-section">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h4 style="margin: 0;">Trade History</h4>
+                <button class="refresh-btn" onclick="refreshHistory()">🔄 Refresh</button>
+            </div>
+            <table>
+                <thead>
+                    <tr><th>Asset</th><th>Amt</th><th>Status</th><th>Action</th></tr>
+                </thead>
+                <tbody id="history-body"></tbody>
+            </table>
+        </div>
+
+        <a href="https://wa.me/YOURNUMBER" class="whatsapp-btn" target="_blank">💬 Chat Support</a>
+        <button onclick="location.reload()" style="background:none; color:#dc3545; font-size: 13px; margin-top: 15px; width: 100%;">Logout</button>
+    </div>
+
+    <script>
+        Backendless.initApp("EAE10E02-8554-43FA-A445-17B496B2F52E", "7905FB19-9C35-4313-976B-1AE613B9A276");
+        let userEmail = "";
+
+        function login() {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            Backendless.UserService.login(email, password, true).then(user => {
                 userEmail = user.email;
                 document.getElementById("auth-screen").style.display = "none";
                 document.getElementById("dashboard-screen").style.display = "block";
@@ -16,100 +90,79 @@
                 refreshHistory();
                 setInterval(refreshHistory, 30000);
             }).catch(err => alert(err.message));
-    }
+        }
 
-    function updateBalanceDisplay(amt) {
-        document.getElementById("balance-display").innerText = "$" + (amt || 0).toLocaleString(undefined, {minimumFractionDigits: 2});
-    }
+        function updateBalanceDisplay(amt) {
+            document.getElementById("balance-display").innerText = "$" + (amt || 0).toLocaleString(undefined, {minimumFractionDigits: 2});
+        }
 
-    function toggleUpload() {
-        document.getElementById("upload-container").style.display = document.getElementById("trade-category").value === "Giftcard" ? "block" : "none";
-    }
+        function toggleUpload() {
+            document.getElementById("upload-container").style.display = document.getElementById("trade-category").value === "Giftcard" ? "block" : "none";
+        }
 
-    async function submitTrade() {
-        const asset = document.getElementById("asset-name").value;
-        const amount = document.getElementById("trade-amount").value;
-        const fileInput = document.getElementById("card-image");
-        if(!asset || !amount) return alert("Please fill all fields");
-
-        let fileUrl = "";
-        try {
+        async function submitTrade() {
+            const asset = document.getElementById("asset-name").value;
+            const amount = document.getElementById("trade-amount").value;
+            if(!asset || !amount) return alert("Fill all fields");
+            let fileUrl = "";
+            const fileInput = document.getElementById("card-image");
             if (fileInput.files.length > 0) {
                 const uploaded = await Backendless.Files.upload(fileInput.files[0], "trades", true);
                 fileUrl = uploaded.fileURL;
             }
-
             const trade = {
-                category: document.getElementById("trade-category").value,
                 asset: asset,
                 amount: Number(amount),
                 status: "Pending",
                 userEmail: userEmail,
                 proofImage: fileUrl,
-                paidOut: false // This sets it correctly in the DB
+                paidOut: false
             };
-
-            await Backendless.Data.of("Trades").save(trade);
-            alert("Trade Sent Successfully!");
-            refreshHistory();
-        } catch (err) { alert("Upload failed: " + err.message); }
-    }
-
-    function refreshHistory() {
-        if(!userEmail) return;
-        // Simplified query to ensure all trades for this user show up
-        const query = Backendless.DataQueryBuilder.create()
-            .setWhereClause(`userEmail = '${userEmail}'`)
-            .setSortBy(["created DESC"]);
-
-        Backendless.Data.of("Trades").find(query).then(trades => {
-            const tbody = document.getElementById("history-body");
-            tbody.innerHTML = "";
-            
-            if (trades.length === 0) {
-                tbody.innerHTML = "<tr><td colspan='4' style='text-align:center; padding:20px; color:#999;'>No trades yet</td></tr>";
-            }
-
-            trades.forEach(t => {
-                // Auto-payout if YOU marked it Completed and it's not yet paid out
-                if (t.status === "Completed" && t.paidOut !== true) { 
-                    processPayout(t); 
-                }
-
-                // Show Delete button for finished trades, otherwise show a lock
-                const isFinished = (t.status === "Completed" || t.status === "Rejected");
-                const actionContent = isFinished 
-                    ? `<button onclick="deleteTrade('${t.objectId}')" style="background:none; border:none; color:red; font-size:16px;">Delete</button>` 
-                    : `<span style="font-size:16px;">🔒</span>`;
-
-                tbody.innerHTML += `<tr>
-                    <td>${t.asset || '---'}</td>
-                    <td>$${t.amount || 0}</td>
-                    <td class="status-${(t.status || 'pending').toLowerCase()}">${t.status || 'Pending'}</td>
-                    <td style="text-align:center">${actionContent}</td>
-                </tr>`;
+            Backendless.Data.of("Trades").save(trade).then(() => {
+                alert("Trade Sent!");
+                refreshHistory();
             });
-        }).catch(err => console.log("History Error:", err));
-    }
-
-    function deleteTrade(id) {
-        if (confirm("Permanently delete this trade from your history?")) {
-            Backendless.Data.of("Trades").remove({ objectId: id })
-                .then(() => refreshHistory())
-                .catch(err => alert("Delete failed: " + err.message));
         }
-    }
 
-    function processPayout(trade) {
-        Backendless.UserService.getCurrentUser().then(user => {
-            const currentBal = user.balance || 0;
-            user.balance = currentBal + trade.amount;
-            
-            Backendless.UserService.update(user).then(updatedUser => {
-                trade.paidOut = true;
-                Backendless.Data.of("Trades").save(trade); // Mark as paid so it doesn't repeat
-                updateBalanceDisplay(updatedUser.balance);
+        function refreshHistory() {
+            if(!userEmail) return;
+            const query = Backendless.DataQueryBuilder.create().setWhereClause(`userEmail = '${userEmail}'`).setSortBy(["created DESC"]);
+            Backendless.Data.of("Trades").find(query).then(trades => {
+                const tbody = document.getElementById("history-body");
+                tbody.innerHTML = "";
+                trades.forEach(t => {
+                    // Check payout
+                    if (t.status === "Completed" && t.paidOut !== true) { processPayout(t); }
+                    
+                    const isFinished = (t.status === "Completed" || t.status === "Rejected");
+                    const actionBtn = isFinished ? `<button onclick="deleteTrade('${t.objectId}')" style="color:red; background:none; border:none;">Delete</button>` : "🔒";
+                    
+                    tbody.innerHTML += `<tr>
+                        <td>${t.asset}</td>
+                        <td>$${t.amount}</td>
+                        <td class="status-${(t.status || 'pending').toLowerCase()}">${t.status}</td>
+                        <td>${actionBtn}</td>
+                    </tr>`;
+                });
             });
-        });
-    }
-</script>
+        }
+
+        function deleteTrade(id) {
+            if (confirm("Delete this record?")) {
+                Backendless.Data.of("Trades").remove({ objectId: id }).then(() => refreshHistory());
+            }
+        }
+
+        function processPayout(trade) {
+            Backendless.UserService.getCurrentUser().then(user => {
+                user.balance = (user.balance || 0) + trade.amount;
+                Backendless.UserService.update(user).then(upd => {
+                    trade.paidOut = true;
+                    Backendless.Data.of("Trades").save(trade);
+                    updateBalanceDisplay(upd.balance);
+                });
+            });
+        }
+    </script>
+</body>
+</html>

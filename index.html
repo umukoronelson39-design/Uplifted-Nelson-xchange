@@ -1,272 +1,54 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Uplifted Nelson Xchange</title>
-
+<title>Nelson Xchange</title>
+<script src="https://api.backendless.com/sdk/js/latest/backendless.min.js"></script>
 <style>
-body {
-  font-family: Arial, sans-serif;
-  background: #0f172a;
-  color: #fff;
-  margin: 0;
-  padding: 0;
-}
-
-.container {
-  max-width: 900px;
-  margin: auto;
-  padding: 20px;
-}
-
-h1, h2 {
-  text-align: center;
-  color: #38bdf8;
-}
-
-input, select, button {
-  width: 100%;
-  padding: 10px;
-  margin: 8px 0;
-  border-radius: 5px;
-  border: none;
-}
-
-button {
-  background: #38bdf8;
-  color: #000;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-button:hover {
-  opacity: 0.85;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 15px;
-}
-
-th, td {
-  border: 1px solid #334155;
-  padding: 8px;
-  text-align: center;
-}
-
-th {
-  background: #1e293b;
-}
-
-.hidden {
-  display: none;
-}
-
-.status-Pending { color: orange; }
-.status-Approved { color: lightgreen; }
-.status-Rejected { color: red; }
+body{font-family:Arial;background:#f4f6f9}
+.box{max-width:350px;margin:40px auto;background:white;padding:20px;border-radius:10px}
+input,button{width:100%;padding:10px;margin:6px 0}
+button{background:#0b5ed7;color:white;border:none;border-radius:6px}
+h3{text-align:center}
 </style>
 </head>
-
 <body>
 
-<div class="container">
+<div class="box">
+<h3>Nelson Xchange</h3>
 
-<!-- LOGIN -->
-<div id="loginSection">
-  <h1>Uplifted Nelson Xchange</h1>
-  <input id="username" placeholder="Username">
-  <input id="password" type="password" placeholder="Password">
-  <button id="loginBtn">Login</button>
-  <p id="loginError" style="color:red;display:none;">Invalid login</p>
-</div>
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
 
-<!-- USER DASHBOARD -->
-<div id="userSection" class="hidden">
-  <h2>User Dashboard</h2>
-
-  <p>We buy and sell Bitcoins, Crypto & all Gift Cards</p>
-
-  <select id="tradeCategory">
-    <option value="">Select Category</option>
-    <option value="Crypto">Crypto</option>
-    <option value="Gift Card">Gift Card</option>
-  </select>
-
-  <select id="assetType" disabled>
-    <option value="">Select Asset</option>
-  </select>
-
-  <input id="amount" placeholder="Enter Amount">
-  <button onclick="submitTrade()">Submit Trade</button>
-
-  <h3>Your Trades</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>Category</th>
-        <th>Asset</th>
-        <th>Amount</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody id="userTrades"></tbody>
-  </table>
-
-  <button onclick="logout()">Logout</button>
-</div>
-
-<!-- ADMIN DASHBOARD -->
-<div id="adminSection" class="hidden">
-  <h2>Admin Dashboard</h2>
-
-  <table>
-    <thead>
-      <tr>
-        <th>User</th>
-        <th>Category</th>
-        <th>Asset</th>
-        <th>Amount</th>
-        <th>Status</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody id="adminTrades"></tbody>
-  </table>
-
-  <button onclick="logout()">Logout</button>
-</div>
-
+<button onclick="register()">Create Account</button>
+<button onclick="login()">Login</button>
 </div>
 
 <script>
-const USERNAME = "Upliftednel";
-const PASSWORD = "Nelson@24$";
-const ADMIN_USER = "admin";
-const ADMIN_PASS = "Admin@123";
+Backendless.initApp(
+ "EAE10E02-8554-43FA-A445-17B496B2F52E",
+ "7905FB19-9C35-4313-976B-1AE613B9A276"
+);
 
-const loginSection = document.getElementById("loginSection");
-const userSection = document.getElementById("userSection");
-const adminSection = document.getElementById("adminSection");
+function register(){
+ let user = {
+   email: document.getElementById("email").value,
+   password: document.getElementById("password").value
+ };
 
-const cryptoAssets = ["Bitcoin (BTC)", "Ethereum (ETH)", "USDT", "USDC", "BNB", "TRON"];
-const giftCards = ["Amazon", "Apple", "Google Play", "Steam", "Netflix", "Visa"];
-
-document.getElementById("loginBtn").onclick = () => {
-  const u = username.value;
-  const p = password.value;
-
-  if (u === USERNAME && p === PASSWORD) {
-    localStorage.setItem("role","user");
-    loginSection.classList.add("hidden");
-    userSection.classList.remove("hidden");
-    renderUserTrades();
-  }
-  else if (u === ADMIN_USER && p === ADMIN_PASS) {
-    localStorage.setItem("role","admin");
-    loginSection.classList.add("hidden");
-    adminSection.classList.remove("hidden");
-    renderAdminTrades();
-  }
-  else {
-    loginError.style.display = "block";
-  }
-};
-
-function logout(){
-  localStorage.clear();
-  location.reload();
+ Backendless.UserService.register(user)
+ .then(()=>alert("Registered successfully! Now login."))
+ .catch(err=>alert(err.message));
 }
 
-// Auto login offline
-if(localStorage.getItem("role") === "user"){
-  loginSection.classList.add("hidden");
-  userSection.classList.remove("hidden");
-  renderUserTrades();
-}
-if(localStorage.getItem("role") === "admin"){
-  loginSection.classList.add("hidden");
-  adminSection.classList.remove("hidden");
-  renderAdminTrades();
-}
-
-// Trade category logic
-tradeCategory.onchange = () => {
-  assetType.innerHTML = '<option value="">Select Asset</option>';
-  assetType.disabled = false;
-  let list = tradeCategory.value === "Crypto" ? cryptoAssets : giftCards;
-  list.forEach(a => {
-    let o = document.createElement("option");
-    o.textContent = a;
-    assetType.appendChild(o);
-  });
-};
-
-function submitTrade(){
-  const trades = JSON.parse(localStorage.getItem("trades")) || [];
-  trades.push({
-    user: USERNAME,
-    category: tradeCategory.value,
-    asset: assetType.value,
-    amount: amount.value,
-    status: "Pending"
-  });
-  localStorage.setItem("trades", JSON.stringify(trades));
-  renderUserTrades();
-  alert("Trade submitted");
-}
-
-function renderUserTrades(){
-  const trades = JSON.parse(localStorage.getItem("trades")) || [];
-  userTrades.innerHTML = "";
-  trades.filter(t => t.user === USERNAME).forEach(t => {
-    userTrades.innerHTML += `
-      <tr>
-        <td>${t.category}</td>
-        <td>${t.asset}</td>
-        <td>${t.amount}</td>
-        <td class="status-${t.status}">${t.status}</td>
-      </tr>
-    `;
-  });
-}
-
-function renderAdminTrades(){
-  const trades = JSON.parse(localStorage.getItem("trades")) || [];
-  adminTrades.innerHTML = "";
-  trades.forEach((t,i) => {
-    adminTrades.innerHTML += `
-      <tr>
-        <td>${t.user}</td>
-        <td>${t.category}</td>
-        <td>${t.asset}</td>
-        <td>${t.amount}</td>
-        <td class="status-${t.status}">${t.status}</td>
-        <td>
-          ${t.status === "Pending" ? `
-            <button onclick="approve(${i})">✔</button>
-            <button onclick="reject(${i})">✖</button>
-          ` : "-"}
-        </td>
-      </tr>
-    `;
-  });
-}
-
-function approve(i){
-  let t = JSON.parse(localStorage.getItem("trades"));
-  t[i].status = "Approved";
-  localStorage.setItem("trades", JSON.stringify(t));
-  renderAdminTrades();
-}
-
-function reject(i){
-  let t = JSON.parse(localStorage.getItem("trades"));
-  t[i].status = "Rejected";
-  localStorage.setItem("trades", JSON.stringify(t));
-  renderAdminTrades();
+function login(){
+ Backendless.UserService.login(
+   document.getElementById("email").value,
+   document.getElementById("password").value,
+   true
+ )
+ .then(()=>alert("Login successful!"))
+ .catch(err=>alert(err.message));
 }
 </script>
 

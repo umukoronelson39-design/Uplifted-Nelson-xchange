@@ -11,22 +11,16 @@
         body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; color: var(--text); }
         .container { width: 100%; max-width: 440px; padding: 20px; box-sizing: border-box; }
         .box { background: white; padding: 30px; border-radius: 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; margin-bottom: 20px; width: 100%; box-sizing: border-box; }
-        
         .input-group { text-align: left; margin-bottom: 15px; }
         label { font-size: 11px; font-weight: 800; color: #64748b; letter-spacing: 0.05em; }
         input, select { width: 100%; padding: 14px; margin-top: 6px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 15px; box-sizing: border-box; outline: none; }
-        
         .btn { width: 100%; padding: 16px; border: none; border-radius: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; transition: 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:active { transform: scale(0.97); }
-        
         .wallet-card { background: #1e293b; color: white; padding: 25px; border-radius: 24px; text-align: left; margin: 15px 0; }
         .wallet-card h1 { color: #38bdf8; font-size: 36px; margin: 5px 0 0 0; }
-        
         .tab-bar { display: flex; background: #f1f5f9; padding: 5px; border-radius: 16px; gap: 5px; margin-bottom: 20px; }
         .tab { flex: 1; padding: 12px; border: none; border-radius: 12px; font-weight: 700; font-size: 11px; cursor: pointer; background: transparent; color: #64748b; text-transform: uppercase; }
         .active-tab { background: white; color: var(--primary); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-
         .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; text-align: left; }
         .status-badge { font-size: 10px; padding: 4px 8px; border-radius: 6px; font-weight: 800; text-transform: uppercase; }
         .pending { background: #fef3c7; color: #92400e; }
@@ -39,26 +33,11 @@
     <div class="container">
         <div id="auth-screen" class="box">
             <h2 id="auth-title">Sign In</h2>
-            <div id="name-field" class="input-group" style="display:none;">
-                <label>FULL NAME</label>
-                <input id="reg-name" type="text" placeholder="John Doe">
-            </div>
-            <div class="input-group">
-                <label>EMAIL ADDRESS</label>
-                <input id="email" type="email" placeholder="name@email.com">
-            </div>
-            <div class="input-group">
-                <label>PASSWORD</label>
-                <input id="password" type="password" placeholder="••••••••">
-            </div>
-            <div id="login-btns">
-                <button class="btn btn-primary" onclick="login()">Login</button>
-                <p style="font-size:12px; margin-top:15px; color: gray;">New user? <span style="color:var(--primary); font-weight:700; cursor:pointer;" onclick="toggleAuth(true)">Create Account</span></p>
-            </div>
-            <div id="reg-btns" style="display:none;">
-                <button class="btn btn-primary" style="background:var(--success);" onclick="register()">Register Account</button>
-                <p style="font-size:12px; margin-top:15px; color: gray;">Member? <span style="color:var(--primary); font-weight:700; cursor:pointer;" onclick="toggleAuth(false)">Sign In</span></p>
-            </div>
+            <div id="name-field" class="input-group" style="display:none;"><label>FULL NAME</label><input id="reg-name" type="text" placeholder="John Doe"></div>
+            <div class="input-group"><label>EMAIL ADDRESS</label><input id="email" type="email" placeholder="name@email.com"></div>
+            <div class="input-group"><label>PASSWORD</label><input id="password" type="password" placeholder="••••••••"></div>
+            <div id="login-btns"><button class="btn btn-primary" onclick="login()">Login</button><p style="font-size:12px; margin-top:15px; color: gray;">New? <span style="color:var(--primary); font-weight:700; cursor:pointer;" onclick="toggleAuth(true)">Create Account</span></p></div>
+            <div id="reg-btns" style="display:none;"><button class="btn btn-primary" style="background:var(--success);" onclick="register()">Register Account</button><p style="font-size:12px; margin-top:15px; color: gray;">Member? <span style="color:var(--primary); font-weight:700; cursor:pointer;" onclick="toggleAuth(false)">Sign In</span></p></div>
         </div>
 
         <div id="dashboard" style="display:none; width:100%;">
@@ -66,7 +45,7 @@
                 <p id="welcome-msg" style="text-align:left; font-size:14px; margin:0;"></p>
                 <div class="wallet-card">
                     <p style="margin:0; font-size:11px; font-weight:800; opacity:0.6;">CURRENT BALANCE</p>
-                    <h1 id="bal-display">$0.00</h1>
+                    <h1 id="bal-display">$0</h1>
                 </div>
 
                 <div class="tab-bar">
@@ -76,29 +55,12 @@
                     <button id="t-admin" class="tab" onclick="switchTab('admin')" style="display:none; color:var(--danger);">Admin</button>
                 </div>
 
-                <div id="ui-trade">
-                    <input id="asset" placeholder="Asset (BTC, iTunes, etc)">
-                    <input id="amt" type="number" placeholder="Value in USD">
-                    <button class="btn btn-primary" onclick="submitTrade()">Send for Review</button>
-                </div>
-
-                <div id="ui-payout" style="display:none;">
-                    <select id="payout-method"><option value="Crypto">Crypto Wallet</option><option value="Bank">Bank Transfer</option></select>
-                    <input id="payout-amt" type="number" placeholder="Amount to Withdraw">
-                    <input id="payout-dest" type="text" placeholder="Wallet Address / Bank Info">
-                    <button class="btn btn-primary" onclick="submitPayout()">Request Withdrawal</button>
-                </div>
-
-                <div id="ui-history" style="display:none;">
-                    <div id="history-list"></div>
-                </div>
-
+                <div id="ui-trade"><input id="asset" placeholder="Asset (BTC, iTunes, etc)"><input id="amt" type="number" placeholder="Value in USD"><button class="btn btn-primary" onclick="submitTrade()">Send for Review</button></div>
+                <div id="ui-payout" style="display:none;"><select id="payout-method"><option value="Crypto">Crypto Wallet</option><option value="Bank">Bank Transfer</option></select><input id="payout-amt" type="number" placeholder="Amount to Withdraw"><input id="payout-dest" type="text" placeholder="Wallet Address / Info"><button class="btn btn-primary" onclick="submitPayout()">Request Withdrawal</button></div>
+                <div id="ui-history" style="display:none;"><div id="history-list"></div></div>
                 <div id="ui-admin" style="display:none; text-align:left;">
-                    <div class="input-group">
-                        <label>SEARCH USER EMAIL</label>
-                        <input type="text" id="admin-search" placeholder="Filter requests..." oninput="loadAdmin()">
-                    </div>
-                    <div id="admin-list"></div>
+                    <div id="admin-stats" style="margin-bottom:15px; padding:10px; background:#eef2ff; border-radius:12px; font-weight:bold; color:var(--primary);">Total Volume: <span id="total-vol">$0</span></div>
+                    <input type="text" id="admin-search" placeholder="Search user email..." oninput="loadAdmin()"><div id="admin-list"></div>
                 </div>
 
                 <button onclick="logout()" style="background:none; border:none; color:var(--danger); font-size:11px; font-weight:800; margin-top:30px; cursor:pointer;">SECURE LOGOUT</button>
@@ -107,11 +69,7 @@
     </div>
 
     <script>
-        // Safety initialization
-        function init() {
-            if (typeof Backendless === 'undefined') { setTimeout(init, 100); return; }
-            Backendless.initApp("EAE10E02-8554-43FA-A445-17B496B2F52E", "7905FB19-9C35-4313-976B-1AE613B9A276");
-        }
+        function init() { if (typeof Backendless === 'undefined') { setTimeout(init, 100); return; } Backendless.initApp("EAE10E02-8554-43FA-A445-17B496B2F52E", "7905FB19-9C35-4313-976B-1AE613B9A276"); }
         init();
 
         function toggleAuth(isReg) {
@@ -122,15 +80,10 @@
         }
 
         async function login() {
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('password').value;
             try {
-                const user = await Backendless.UserService.login(email, pass, true);
+                const user = await Backendless.UserService.login(document.getElementById('email').value, document.getElementById('password').value, true);
                 enterDashboard(user);
-            } catch (err) {
-                if(err.code === 3002) { await Backendless.UserService.logout(); alert("Session reset. Please login again."); }
-                else alert(err.message);
-            }
+            } catch (err) { alert(err.message); }
         }
 
         function register() {
@@ -139,9 +92,7 @@
             user.password = document.getElementById('password').value;
             user.name = document.getElementById('reg-name').value;
             user.balance = 0;
-            Backendless.UserService.register(user).then(() => { 
-                alert("Success! Now please Sign In."); toggleAuth(false); 
-            }).catch(e => alert(e.message));
+            Backendless.UserService.register(user).then(() => { alert("Success! Sign In."); toggleAuth(false); }).catch(e => alert(e.message));
         }
 
         function enterDashboard(user) {
@@ -149,9 +100,8 @@
             document.getElementById('dashboard').style.display = 'block';
             document.getElementById('bal-display').innerText = "$" + (user.balance || 0).toLocaleString();
             
-            // ADMIN VS USER VIEW
-            if (user.isAdmin === true) {
-                document.getElementById('welcome-msg').innerHTML = `Access: <b style="color:var(--danger);">Admin Panel</b>`;
+            if (user.isAdmin) {
+                document.getElementById('welcome-msg').innerHTML = `Access: <b style="color:var(--danger);">Admin</b>`;
                 document.getElementById('t-admin').style.display = 'block';
                 document.getElementById('t-trade').style.display = 'none';
                 document.getElementById('t-payout').style.display = 'none';
@@ -159,68 +109,44 @@
             } else {
                 document.getElementById('welcome-msg').innerHTML = `Hello, <b>${user.name || "User"}</b>`;
                 document.getElementById('t-admin').style.display = 'none';
-                document.getElementById('t-trade').style.display = 'block';
-                document.getElementById('t-payout').style.display = 'block';
                 switchTab('trade');
             }
             loadHistory();
         }
 
         function switchTab(t) {
-            const uis = ['ui-trade', 'ui-history', 'ui-admin', 'ui-payout'];
-            uis.forEach(id => document.getElementById(id).style.display = 'none');
+            ['ui-trade', 'ui-history', 'ui-admin', 'ui-payout'].forEach(id => document.getElementById(id).style.display = 'none');
             document.getElementById('ui-' + t).style.display = 'block';
-            
-            ['t-trade', 't-history', 't-admin', 't-payout'].forEach(id => {
-                const tab = document.getElementById(id);
-                if(tab) tab.className = 'tab';
-            });
+            ['t-trade', 't-history', 't-admin', 't-payout'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).className = 'tab'; });
             document.getElementById('t-' + t).className = 'tab active-tab';
-            
             if(t === 'history') loadHistory();
             if(t === 'admin') loadAdmin();
         }
 
         async function submitTrade() {
             const user = await Backendless.UserService.getCurrentUser();
-            const data = { 
-                asset: document.getElementById('asset').value, 
-                amount: Number(document.getElementById('amt').value), 
-                status: "Pending", 
-                userEmail: user.email 
-            };
-            if(!data.asset || !data.amount) return alert("Fill all fields");
-            Backendless.Data.of("Trades").save(data).then(() => { 
-                alert("Trade Sent!"); switchTab('history'); 
-            }).catch(e => alert(e.message));
+            const data = { asset: document.getElementById('asset').value, amount: Number(document.getElementById('amt').value), status: "Pending", userEmail: user.email };
+            Backendless.Data.of("Trades").save(data).then(() => { alert("Sent!"); switchTab('history'); }).catch(e => alert(e.message));
         }
 
         async function submitPayout() {
             const user = await Backendless.UserService.getCurrentUser();
             const amt = Number(document.getElementById('payout-amt').value);
-            if(amt > user.balance) return alert("Insufficient Balance");
-            
-            const data = { 
-                amount: amt, 
-                destination: document.getElementById('payout-dest').value, 
-                status: "Pending", 
-                userEmail: user.email 
-            };
-            Backendless.Data.of("Withdrawals").save(data).then(() => { 
-                alert("Withdrawal Requested!"); switchTab('history'); 
-            }).catch(e => alert(e.message));
+            if(amt > user.balance) return alert("Insufficient Funds");
+            const data = { amount: amt, destination: document.getElementById('payout-dest').value, status: "Pending", userEmail: user.email };
+            Backendless.Data.of("Withdrawals").save(data).then(() => { alert("Requested!"); switchTab('history'); }).catch(e => alert(e.message));
         }
 
-        function loadHistory() {
-            Backendless.UserService.getCurrentUser().then(user => {
-                const query = Backendless.DataQueryBuilder.create().setWhereClause(`userEmail = '${user.email}'`);
-                Backendless.Data.of("Trades").find(query).then(trades => {
-                    const list = document.getElementById('history-list');
-                    list.innerHTML = trades.length ? "" : "<p style='font-size:12px; color:gray;'>No activity recorded.</p>";
-                    trades.forEach(t => {
-                        const s = (t.status || 'Pending').toLowerCase();
-                        list.innerHTML += `<div class="history-item"><div><b>${t.asset}</b><br><small>$${t.amount}</small></div><div class="status-badge ${s}">${t.status}</div></div>`;
-                    });
+        async function loadHistory() {
+            const user = await Backendless.UserService.getCurrentUser();
+            const query = Backendless.DataQueryBuilder.create().setWhereClause(`userEmail = '${user.email}'`);
+            Backendless.Data.of("Trades").find(query).then(trades => {
+                const list = document.getElementById('history-list');
+                list.innerHTML = trades.length ? "" : "No activity.";
+                trades.forEach(t => {
+                    const status = t.status || "Pending";
+                    const amount = t.amount || 0;
+                    list.innerHTML += `<div class="history-item"><div><b>${t.asset}</b><br><small>$${amount}</small></div><div class="status-badge ${status.toLowerCase()}">${status}</div></div>`;
                 });
             });
         }
@@ -228,50 +154,48 @@
         async function loadAdmin() {
             const search = document.getElementById('admin-search').value;
             const where = search ? `status = 'Pending' AND userEmail LIKE '%${search}%'` : "status = 'Pending'";
-            const query = Backendless.DataQueryBuilder.create().setWhereClause(where);
             
+            // Stats Calculation
+            const allTrades = await Backendless.Data.of("Trades").find(Backendless.DataQueryBuilder.create().setWhereClause("status = 'Completed'"));
+            const total = allTrades.reduce((sum, t) => sum + (t.amount || 0), 0);
+            document.getElementById('total-vol').innerText = "$" + total.toLocaleString();
+
+            const query = Backendless.DataQueryBuilder.create().setWhereClause(where);
             const trades = await Backendless.Data.of("Trades").find(query);
             const draws = await Backendless.Data.of("Withdrawals").find(query);
             
-            let html = '<h5 style="color:var(--primary); margin:0 0 10px 0;">PENDING TRADES</h5>';
-            if(trades.length === 0) html += '<p style="font-size:11px; color:gray;">None.</p>';
+            let html = '<h5 style="color:var(--primary);">TRADES</h5>';
             trades.forEach(t => {
-                html += `<div class="admin-card"><b>${t.userEmail}</b><br>${t.asset}: $${t.amount}<br><button onclick="approveTrade('${t.objectId}','${t.userEmail}',${t.amount})" style="background:var(--success); color:white; border:none; padding:8px; border-radius:8px; cursor:pointer; margin-top:5px; width:100%;">Approve & Pay</button></div>`;
+                html += `<div class="admin-card"><b>${t.userEmail}</b><br>${t.asset}: $${t.amount || 0}<br><button onclick="approveTrade('${t.objectId}','${t.userEmail}',${t.amount || 0})" style="background:var(--success); color:white; width:100%; border:none; padding:8px; border-radius:8px; margin-top:5px;">Approve</button></div>`;
             });
             
-            html += '<h5 style="color:var(--danger); margin:20px 0 10px 0;">WITHDRAWAL REQUESTS</h5>';
-            if(draws.length === 0) html += '<p style="font-size:11px; color:gray;">None.</p>';
+            html += '<h5 style="color:var(--danger); margin-top:20px;">WITHDRAWALS</h5>';
             draws.forEach(p => {
-                html += `<div class="admin-card"><b>${p.userEmail}</b><br>Requesting $${p.amount}<br><small>${p.destination}</small><br><button onclick="confirmPayout('${p.objectId}','${p.userEmail}',${p.amount})" style="background:var(--primary); color:white; border:none; padding:8px; border-radius:8px; cursor:pointer; margin-top:5px; width:100%;">Confirm Sent</button></div>`;
+                html += `<div class="admin-card"><b>${p.userEmail}</b><br>$${p.amount || 0}<br><small>${p.destination || 'No info'}</small><br><button onclick="confirmPayout('${p.objectId}','${p.userEmail}',${p.amount || 0})" style="background:var(--primary); color:white; width:100%; border:none; padding:8px; border-radius:8px; margin-top:5px;">Confirm Sent</button></div>`;
             });
-            document.getElementById('admin-list').innerHTML = html;
+            document.getElementById('admin-list').innerHTML = html ? html : "No pending items.";
         }
 
         async function approveTrade(id, email, amt) {
             const t = await Backendless.Data.of("Trades").findById(id);
             t.status = "Completed";
             await Backendless.Data.of("Trades").save(t);
-            // Add to balance
-            const query = Backendless.DataQueryBuilder.create().setWhereClause(`email = '${email}'`);
-            const users = await Backendless.Data.of("Users").find(query);
+            const users = await Backendless.Data.of("Users").find(Backendless.DataQueryBuilder.create().setWhereClause(`email = '${email}'`));
             const user = users[0];
             user.balance = (user.balance || 0) + amt;
             await Backendless.Data.of("Users").save(user);
-            alert("Approved! Balance updated."); loadAdmin();
+            alert("Approved!"); loadAdmin();
         }
 
         async function confirmPayout(id, email, amt) {
-            if(!confirm("Confirm you have sent the funds?")) return;
             const p = await Backendless.Data.of("Withdrawals").findById(id);
             p.status = "Completed";
             await Backendless.Data.of("Withdrawals").save(p);
-            // Deduct from balance
-            const query = Backendless.DataQueryBuilder.create().setWhereClause(`email = '${email}'`);
-            const users = await Backendless.Data.of("Users").find(query);
+            const users = await Backendless.Data.of("Users").find(Backendless.DataQueryBuilder.create().setWhereClause(`email = '${email}'`));
             const user = users[0];
             user.balance = (user.balance || 0) - amt;
             await Backendless.Data.of("Users").save(user);
-            alert("Withdrawal Finalized!"); loadAdmin();
+            alert("Payout Sent!"); loadAdmin();
         }
 
         function logout() { Backendless.UserService.logout().then(() => location.reload()); }

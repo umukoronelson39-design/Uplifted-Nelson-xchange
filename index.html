@@ -56,7 +56,7 @@
                 </div>
 
                 <div id="ui-trade"><input id="asset" placeholder="Asset (BTC, iTunes, etc)"><input id="amt" type="number" placeholder="Value in USD"><button class="btn btn-primary" onclick="submitTrade()">Send for Review</button></div>
-                <div id="ui-payout" style="display:none;"><select id="payout-method"><option value="Crypto">Crypto Wallet</option><option value="Bank">Bank Transfer</option></select><input id="payout-amt" type="number" placeholder="Amount to Withdraw"><input id="payout-dest" type="text" placeholder="Wallet Address / Info"><button class="btn btn-primary" onclick="submitPayout()">Request Withdrawal</button></div>
+                <div id="ui-payout" style="display:none;"><select id="payout-method"><option value="Crypto">Crypto Wallet</option><option value="Bank">Bank Transfer</option></select><input id="payout-amt" type="number" placeholder="Amount"><input id="payout-dest" type="text" placeholder="Address / Info"><button class="btn btn-primary" onclick="submitPayout()">Request Withdrawal</button></div>
                 <div id="ui-history" style="display:none;"><div id="history-list"></div></div>
                 <div id="ui-admin" style="display:none; text-align:left;">
                     <div id="admin-stats" style="margin-bottom:15px; padding:10px; background:#eef2ff; border-radius:12px; font-weight:bold; color:var(--primary);">Total Volume: <span id="total-vol">$0</span></div>
@@ -99,42 +99,28 @@
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
             document.getElementById('bal-display').innerText = "$" + (user.balance || 0).toLocaleString();
-            
-            if (user.isAdmin) {
-                document.getElementById('welcome-msg').innerHTML = `Access: <b style="color:var(--danger);">Admin</b>`;
-                document.getElementById('t-admin').style.display = 'block';
-                document.getElementById('t-trade').style.display = 'none';
-                document.getElementById('t-payout').style.display = 'none';
-                switchTab('admin');
-            } else {
-                document.getElementById('welcome-msg').innerHTML = `Hello, <b>${user.name || "User"}</b>`;
-                document.getElementById('t-admin').style.display = 'none';
-                switchTab('trade');
-            }
-            loadHistory();
+            if (user.isAdmin) { document.getElementById('t-admin').style.display = 'block'; switchTab('admin'); } else { switchTab('trade'); }
+            document.getElementById('welcome-msg').innerHTML = `Hello, <b>${user.name || "User"}</b>`;
         }
 
         function switchTab(t) {
             ['ui-trade', 'ui-history', 'ui-admin', 'ui-payout'].forEach(id => document.getElementById(id).style.display = 'none');
             document.getElementById('ui-' + t).style.display = 'block';
-            ['t-trade', 't-history', 't-admin', 't-payout'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).className = 'tab'; });
-            document.getElementById('t-' + t).className = 'tab active-tab';
             if(t === 'history') loadHistory();
             if(t === 'admin') loadAdmin();
         }
 
         async function submitTrade() {
             const user = await Backendless.UserService.getCurrentUser();
-            const data = { asset: document.getElementById('asset').value, amount: Number(document.getElementById('amt').value), status: "Pending", userEmail: user.email };
+            const amountValue = Number(document.getElementById('amt').value);
+            // Ensuring we save to 'amount' column explicitly
+            const data = { 
+                asset: document.getElementById('asset').value, 
+                amount: amountValue, 
+                status: "Pending", 
+                userEmail: user.email 
+            };
             Backendless.Data.of("Trades").save(data).then(() => { alert("Sent!"); switchTab('history'); }).catch(e => alert(e.message));
-        }
-
-        async function submitPayout() {
-            const user = await Backendless.UserService.getCurrentUser();
-            const amt = Number(document.getElementById('payout-amt').value);
-            if(amt > user.balance) return alert("Insufficient Funds");
-            const data = { amount: amt, destination: document.getElementById('payout-dest').value, status: "Pending", userEmail: user.email };
-            Backendless.Data.of("Withdrawals").save(data).then(() => { alert("Requested!"); switchTab('history'); }).catch(e => alert(e.message));
         }
 
         async function loadHistory() {
@@ -144,9 +130,10 @@
                 const list = document.getElementById('history-list');
                 list.innerHTML = trades.length ? "" : "No activity.";
                 trades.forEach(t => {
+                    // Logic to fix the $0 issue: Check multiple potential field names
+                    const displayAmt = t.amount !== undefined ? t.amount : (t.Value !== undefined ? t.Value : 0);
                     const status = t.status || "Pending";
-                    const amount = t.amount || 0;
-                    list.innerHTML += `<div class="history-item"><div><b>${t.asset}</b><br><small>$${amount}</small></div><div class="status-badge ${status.toLowerCase()}">${status}</div></div>`;
+                    list.innerHTML += `<div class="history-item"><div><b>${t.asset}</b><br><small>$${displayAmt}</small></div><div class="status-badge ${status.toLowerCase()}">${status}</div></div>`;
                 });
             });
         }
@@ -154,26 +141,17 @@
         async function loadAdmin() {
             const search = document.getElementById('admin-search').value;
             const where = search ? `status = 'Pending' AND userEmail LIKE '%${search}%'` : "status = 'Pending'";
-            
-            // Stats Calculation
-            const allTrades = await Backendless.Data.of("Trades").find(Backendless.DataQueryBuilder.create().setWhereClause("status = 'Completed'"));
-            const total = allTrades.reduce((sum, t) => sum + (t.amount || 0), 0);
-            document.getElementById('total-vol').innerText = "$" + total.toLocaleString();
-
             const query = Backendless.DataQueryBuilder.create().setWhereClause(where);
+            
             const trades = await Backendless.Data.of("Trades").find(query);
             const draws = await Backendless.Data.of("Withdrawals").find(query);
             
             let html = '<h5 style="color:var(--primary);">TRADES</h5>';
             trades.forEach(t => {
-                html += `<div class="admin-card"><b>${t.userEmail}</b><br>${t.asset}: $${t.amount || 0}<br><button onclick="approveTrade('${t.objectId}','${t.userEmail}',${t.amount || 0})" style="background:var(--success); color:white; width:100%; border:none; padding:8px; border-radius:8px; margin-top:5px;">Approve</button></div>`;
+                const adminAmt = t.amount !== undefined ? t.amount : (t.Value !== undefined ? t.Value : 0);
+                html += `<div class="admin-card"><b>${t.userEmail}</b><br>${t.asset}: $${adminAmt}<br><button onclick="approveTrade('${t.objectId}','${t.userEmail}',${adminAmt})" style="background:var(--success); color:white; width:100%; border:none; padding:8px; border-radius:8px; margin-top:5px;">Approve</button></div>`;
             });
-            
-            html += '<h5 style="color:var(--danger); margin-top:20px;">WITHDRAWALS</h5>';
-            draws.forEach(p => {
-                html += `<div class="admin-card"><b>${p.userEmail}</b><br>$${p.amount || 0}<br><small>${p.destination || 'No info'}</small><br><button onclick="confirmPayout('${p.objectId}','${p.userEmail}',${p.amount || 0})" style="background:var(--primary); color:white; width:100%; border:none; padding:8px; border-radius:8px; margin-top:5px;">Confirm Sent</button></div>`;
-            });
-            document.getElementById('admin-list').innerHTML = html ? html : "No pending items.";
+            document.getElementById('admin-list').innerHTML = html;
         }
 
         async function approveTrade(id, email, amt) {
@@ -185,17 +163,6 @@
             user.balance = (user.balance || 0) + amt;
             await Backendless.Data.of("Users").save(user);
             alert("Approved!"); loadAdmin();
-        }
-
-        async function confirmPayout(id, email, amt) {
-            const p = await Backendless.Data.of("Withdrawals").findById(id);
-            p.status = "Completed";
-            await Backendless.Data.of("Withdrawals").save(p);
-            const users = await Backendless.Data.of("Users").find(Backendless.DataQueryBuilder.create().setWhereClause(`email = '${email}'`));
-            const user = users[0];
-            user.balance = (user.balance || 0) - amt;
-            await Backendless.Data.of("Users").save(user);
-            alert("Payout Sent!"); loadAdmin();
         }
 
         function logout() { Backendless.UserService.logout().then(() => location.reload()); }

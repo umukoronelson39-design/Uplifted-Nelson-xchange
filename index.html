@@ -30,6 +30,7 @@
         .status-badge { font-size: 10px; padding: 4px 8px; border-radius: 6px; font-weight: 800; text-transform: uppercase; }
         .pending { background: #fef3c7; color: #92400e; }
         .completed { background: #d1fae5; color: #065f46; }
+        .admin-card { background: #f8fafc; padding: 15px; border-radius: 15px; margin-bottom: 10px; text-align: left; border: 1px solid #eee; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -83,16 +84,14 @@
                 <div id="ui-payout" style="display:none;">
                     <select id="payout-method"><option value="Crypto">Crypto</option><option value="Bank">Bank</option></select>
                     <input id="payout-amt" type="number" placeholder="Amount">
-                    <input id="payout-dest" type="text" placeholder="Wallet Address">
+                    <input id="payout-dest" type="text" placeholder="Wallet Address / Bank Details">
                     <button class="btn btn-primary" onclick="submitPayout()">Request Payout</button>
                 </div>
 
-                <div id="ui-history" style="display:none;">
-                    <div id="history-list"></div>
-                </div>
+                <div id="ui-history" style="display:none;"><div id="history-list"></div></div>
 
                 <div id="ui-admin" style="display:none; text-align:left;">
-                    <h4 style="color:var(--danger);">Pending Actions</h4>
+                    <input type="text" id="admin-search" placeholder="Search by user email..." oninput="loadAdmin()" style="margin-bottom:15px;">
                     <div id="admin-list"></div>
                 </div>
 
@@ -129,18 +128,25 @@
             user.password = document.getElementById('password').value;
             user.name = document.getElementById('reg-name').value;
             user.balance = 0;
-            Backendless.UserService.register(user).then(() => {
-                alert("Account Created!"); toggleAuth(false);
-            }).catch(e => alert(e.message));
+            Backendless.UserService.register(user).then(() => { alert("Account Created!"); toggleAuth(false); }).catch(e => alert(e.message));
         }
 
         function enterDashboard(user) {
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
             document.getElementById('bal-display').innerText = "$" + (user.balance || 0).toLocaleString();
-            document.getElementById('welcome-msg').innerHTML = `Hello, <b>${user.name || "User"}</b>`;
             
-            if(user.isAdmin === true) document.getElementById('t-admin').style.display = 'block';
+            if (user.isAdmin === true) {
+                document.getElementById('welcome-msg').innerHTML = `Access: <b style="color:var(--danger);">Admin</b>`;
+                document.getElementById('t-admin').style.display = 'block';
+                document.getElementById('t-trade').style.display = 'none';
+                document.getElementById('t-payout').style.display = 'none';
+                switchTab('admin');
+            } else {
+                document.getElementById('welcome-msg').innerHTML = `Hello, <b>${user.name || "User"}</b>`;
+                document.getElementById('t-admin').style.display = 'none';
+                switchTab('trade');
+            }
             loadHistory();
         }
 
@@ -148,10 +154,8 @@
             const uis = ['ui-trade', 'ui-history', 'ui-admin', 'ui-payout'];
             uis.forEach(id => document.getElementById(id).style.display = 'none');
             document.getElementById('ui-' + t).style.display = 'block';
-            
             ['t-trade', 't-history', 't-admin', 't-payout'].forEach(id => document.getElementById(id).className = 'tab');
             document.getElementById('t-' + t).className = 'tab active-tab';
-            
             if(t === 'history') loadHistory();
             if(t === 'admin') loadAdmin();
         }
@@ -159,14 +163,14 @@
         async function submitTrade() {
             const user = await Backendless.UserService.getCurrentUser();
             const data = { asset: document.getElementById('asset').value, amount: Number(document.getElementById('amt').value), status: "Pending", userEmail: user.email };
-            Backendless.Data.of("Trades").save(data).then(() => { alert("Sent!"); switchTab('history'); });
+            Backendless.Data.of("Trades").save(data).then(() => { alert("Trade Sent!"); switchTab('history'); });
         }
 
         async function submitPayout() {
             const user = await Backendless.UserService.getCurrentUser();
             const amt = Number(document.getElementById('payout-amt').value);
             if(amt > user.balance) return alert("Insufficient Balance");
-            const data = { amount: amt, destination: document.getElementById('payout-dest').value, status: "Pending", userEmail: user.email, type: "Payout" };
+            const data = { amount: amt, destination: document.getElementById('payout-dest').value, status: "Pending", userEmail: user.email };
             Backendless.Data.of("Payouts").save(data).then(() => { alert("Payout Requested!"); switchTab('history'); });
         }
 
@@ -183,22 +187,43 @@
             });
         }
 
-        function loadAdmin() {
-            const query = Backendless.DataQueryBuilder.create().setWhereClause("status = 'Pending'");
-            Backendless.Data.of("Trades").find(query).then(trades => {
-                const list = document.getElementById('admin-list');
-                list.innerHTML = trades.length ? "" : "All clear.";
-                trades.forEach(t => {
-                    list.innerHTML += `<div style="background:#f8fafc; padding:10px; margin-bottom:5px; font-size:12px;">${t.userEmail} | $${t.amount}<br><button onclick="approve('${t.objectId}')">Approve</button></div>`;
-                });
+        async function loadAdmin() {
+            const search = document.getElementById('admin-search').value;
+            const where = search ? `status = 'Pending' AND userEmail LIKE '%${search}%'` : "status = 'Pending'";
+            const query = Backendless.DataQueryBuilder.create().setWhereClause(where);
+            
+            const trades = await Backendless.Data.of("Trades").find(query);
+            const payouts = await Backendless.Data.of("Payouts").find(query);
+            
+            let html = '<h5 style="color:var(--primary);">TRADES</h5>';
+            trades.forEach(t => {
+                html += `<div class="admin-card"><b>${t.userEmail}</b><br>${t.asset}: $${t.amount}<br><button onclick="approveTrade('${t.objectId}')">Approve</button></div>`;
             });
+            
+            html += '<h5 style="color:var(--danger); margin-top:20px;">PAYOUTS</h5>';
+            payouts.forEach(p => {
+                html += `<div class="admin-card"><b>${p.userEmail}</b><br>Send $${p.amount} to:<br><small>${p.destination}</small><br><button onclick="confirmPayout('${p.objectId}','${p.userEmail}',${p.amount})">Confirm Sent</button></div>`;
+            });
+            document.getElementById('admin-list').innerHTML = html;
         }
 
-        async function approve(id) {
+        async function approveTrade(id) {
             const t = await Backendless.Data.of("Trades").findById(id);
             t.status = "Completed";
             await Backendless.Data.of("Trades").save(t);
             alert("Approved!"); loadAdmin();
+        }
+
+        async function confirmPayout(id, email, amt) {
+            if(!confirm("Deduct from balance and confirm sent?")) return;
+            const p = await Backendless.Data.of("Payouts").findById(id);
+            p.status = "Completed";
+            await Backendless.Data.of("Payouts").save(p);
+            const users = await Backendless.Data.of("Users").find(Backendless.DataQueryBuilder.create().setWhereClause(`email = '${email}'`));
+            const user = users[0];
+            user.balance = (user.balance || 0) - amt;
+            await Backendless.Data.of("Users").save(user);
+            alert("Payout Done!"); loadAdmin();
         }
 
         function logout() { Backendless.UserService.logout().then(() => location.reload()); }

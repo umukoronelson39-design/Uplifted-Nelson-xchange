@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nelson Xchange | Professional OTC</title>
+    <title>Nelson Xchange | Premium OTC</title>
     <script src="https://api.backendless.com/sdk/js/latest/backendless.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -24,7 +24,8 @@
         button { width: 100%; padding: 16px; margin: 10px 0; border: none; border-radius: 12px; cursor: pointer; font-weight: 700; transition: 0.2s; }
         .login-btn, .trade-btn { background: var(--primary); color: white; }
         .withdraw-btn { background: var(--success); color: white; }
-        .wallet-card { background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%); color: white; padding: 24px; border-radius: 20px; margin: 20px 0; text-align: left; }
+        .wallet-card { background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%); color: white; padding: 24px; border-radius: 20px; margin: 20px 0; text-align: left; cursor: pointer; transition: 0.3s; }
+        .wallet-card:active { transform: scale(0.98); opacity: 0.9; }
         .wallet-card h1 { font-size: 32px; margin: 8px 0 0 0; font-weight: 700; }
         .tab-container { display: flex; background: #f1f5f9; padding: 4px; border-radius: 14px; margin-bottom: 20px; }
         .tab { flex: 1; padding: 10px; font-size: 13px; background: transparent; border-radius: 10px; color: var(--text-muted); border: none; font-weight: 600; cursor: pointer; }
@@ -56,8 +57,9 @@
 
         <div id="dashboard-screen" class="box" style="display:none;">
             <p id="user-email-display" style="color: var(--text-muted); font-size: 11px; margin-bottom:10px;"></p>
-            <div class="wallet-card">
-                <p style="margin:0; font-size: 11px; opacity: 0.9; font-weight: 600;">AVAILABLE BALANCE</p>
+            
+            <div class="wallet-card" onclick="refreshHistory()" title="Click to sync balance">
+                <p style="margin:0; font-size: 11px; opacity: 0.9; font-weight: 600;">AVAILABLE BALANCE (TAP TO SYNC)</p>
                 <h1 id="balance-display">$0.00</h1>
             </div>
 
@@ -125,7 +127,7 @@
                 document.getElementById("dashboard-screen").style.display = "block";
                 document.getElementById("user-email-display").innerText = userEmail;
                 updateBalanceDisplay(currentBalance);
-                refreshHistory(); setInterval(refreshHistory, 10000);
+                refreshHistory(); setInterval(refreshHistory, 15000); // 15s auto-sync
             }).catch(err => alert(err.message));
         }
 
@@ -154,19 +156,19 @@
                 fileUrl = uploaded.fileURL;
             }
             const trade = { asset: asset, amount: amt, status: "Pending", userEmail: userEmail, proofImage: fileUrl, paidOut: false };
-            Backendless.Data.of("Trades").save(trade).then(() => { alert("Trade Sent!"); refreshHistory(); });
+            Backendless.Data.of("Trades").save(trade).then(() => { alert("Trade Submitted!"); refreshHistory(); });
         }
 
         async function submitWithdrawal() {
             const amt = Number(document.getElementById("withdraw-amount").value);
             const details = document.getElementById("withdraw-details").value;
-            if (amt <= 0 || amt > currentBalance) return alert("Insufficient balance");
+            if (amt <= 0 || amt > currentBalance) return alert("Insufficient funds");
             const user = await Backendless.UserService.getCurrentUser();
             user.balance = currentBalance - amt;
             await Backendless.UserService.update(user);
             updateBalanceDisplay(user.balance);
             await Backendless.Data.of("Withdrawals").save({ amount: amt, method: "Withdrawal", details: details, userEmail: userEmail, status: "Pending" });
-            alert("Requested!"); refreshHistory();
+            alert("Withdrawal request sent!"); refreshHistory();
         }
 
         function refreshHistory() {
@@ -181,6 +183,7 @@
                     const stat = t.status || t.Status || "Pending";
                     const isPaid = t.paidOut !== undefined ? t.paidOut : (t.PaidOut !== undefined ? t.PaidOut : false);
 
+                    // LOGIC: If trade is Completed and not yet paid to balance
                     if (stat === "Completed" && isPaid === false) { 
                         processPayout(t, amt); 
                     }
@@ -200,15 +203,20 @@
 
         function processPayout(trade, amt) {
             Backendless.UserService.getCurrentUser().then(user => {
-                const reward = Number(amt);
-                const current = Number(user.balance || 0);
-                user.balance = current + reward;
+                const startBal = Number(user.balance || 0);
+                const payout = Number(amt);
+                user.balance = startBal + payout;
 
+                // Sync to Users Table
                 Backendless.UserService.update(user).then(upd => {
+                    // Safety check: Mark trade as paid so it doesn't double-count
                     trade.paidOut = true;
                     Backendless.Data.of("Trades").save(trade).then(() => {
                         updateBalanceDisplay(upd.balance);
+                        console.log("Balance auto-updated!");
                     });
+                }).catch(err => {
+                    console.log("Permission Error: Ensure Update is checked in Users table.");
                 });
             });
         }

@@ -8,16 +8,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #4338ca; --success: #059669; --danger: #dc2626; --bg: #f8fafc; --text: #1e293b; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; color: var(--text); }
         .container { width: 100%; max-width: 440px; padding: 20px; box-sizing: border-box; }
         .box { background: white; padding: 30px; border-radius: 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; margin-bottom: 20px; width: 100%; box-sizing: border-box; }
         
         .input-group { text-align: left; margin-bottom: 15px; }
         label { font-size: 11px; font-weight: 800; color: #64748b; letter-spacing: 0.05em; }
-        input, select { width: 100%; padding: 14px; margin-top: 6px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 15px; box-sizing: border-box; }
+        input, select { width: 100%; padding: 14px; margin-top: 6px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 15px; box-sizing: border-box; outline: none; }
         
-        .btn { width: 100%; padding: 16px; border: none; border-radius: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; transition: 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:active { transform: scale(0.97); }
         
         .wallet-card { background: #1e293b; color: white; padding: 25px; border-radius: 24px; text-align: left; margin: 15px 0; }
         .wallet-card h1 { color: #38bdf8; font-size: 36px; margin: 5px 0 0 0; }
@@ -52,11 +53,11 @@
             </div>
             <div id="login-btns">
                 <button class="btn btn-primary" onclick="login()">Login</button>
-                <p style="font-size:12px; margin-top:15px;">New? <span style="color:var(--primary); font-weight:700; cursor:pointer;" onclick="toggleAuth(true)">Create Account</span></p>
+                <p style="font-size:12px; margin-top:15px; color: gray;">New user? <span style="color:var(--primary); font-weight:700; cursor:pointer;" onclick="toggleAuth(true)">Create Account</span></p>
             </div>
             <div id="reg-btns" style="display:none;">
-                <button class="btn btn-primary" style="background:var(--success);" onclick="register()">Register</button>
-                <p style="font-size:12px; margin-top:15px;">Member? <span style="color:var(--primary); font-weight:700; cursor:pointer;" onclick="toggleAuth(false)">Sign In</span></p>
+                <button class="btn btn-primary" style="background:var(--success);" onclick="register()">Register Account</button>
+                <p style="font-size:12px; margin-top:15px; color: gray;">Member? <span style="color:var(--primary); font-weight:700; cursor:pointer;" onclick="toggleAuth(false)">Sign In</span></p>
             </div>
         </div>
 
@@ -64,7 +65,7 @@
             <div class="box">
                 <p id="welcome-msg" style="text-align:left; font-size:14px; margin:0;"></p>
                 <div class="wallet-card">
-                    <p style="margin:0; font-size:11px; font-weight:800; opacity:0.6;">BALANCE</p>
+                    <p style="margin:0; font-size:11px; font-weight:800; opacity:0.6;">CURRENT BALANCE</p>
                     <h1 id="bal-display">$0.00</h1>
                 </div>
 
@@ -76,35 +77,45 @@
                 </div>
 
                 <div id="ui-trade">
-                    <input id="asset" placeholder="Asset (BTC, ETH, etc)">
+                    <input id="asset" placeholder="Asset (BTC, iTunes, etc)">
                     <input id="amt" type="number" placeholder="Value in USD">
-                    <button class="btn btn-primary" onclick="submitTrade()">Submit Review</button>
+                    <button class="btn btn-primary" onclick="submitTrade()">Send for Review</button>
                 </div>
 
                 <div id="ui-payout" style="display:none;">
-                    <select id="payout-method"><option value="Crypto">Crypto</option><option value="Bank">Bank</option></select>
-                    <input id="payout-amt" type="number" placeholder="Amount">
-                    <input id="payout-dest" type="text" placeholder="Wallet Address / Bank Details">
-                    <button class="btn btn-primary" onclick="submitPayout()">Request Payout</button>
+                    <select id="payout-method"><option value="Crypto">Crypto Wallet</option><option value="Bank">Bank Transfer</option></select>
+                    <input id="payout-amt" type="number" placeholder="Amount to Withdraw">
+                    <input id="payout-dest" type="text" placeholder="Wallet Address / Bank Info">
+                    <button class="btn btn-primary" onclick="submitPayout()">Request Withdrawal</button>
                 </div>
 
-                <div id="ui-history" style="display:none;"><div id="history-list"></div></div>
+                <div id="ui-history" style="display:none;">
+                    <div id="history-list"></div>
+                </div>
 
                 <div id="ui-admin" style="display:none; text-align:left;">
-                    <input type="text" id="admin-search" placeholder="Search by user email..." oninput="loadAdmin()" style="margin-bottom:15px;">
+                    <div class="input-group">
+                        <label>SEARCH USER EMAIL</label>
+                        <input type="text" id="admin-search" placeholder="Filter requests..." oninput="loadAdmin()">
+                    </div>
                     <div id="admin-list"></div>
                 </div>
 
-                <button onclick="logout()" style="background:none; border:none; color:var(--danger); font-size:11px; font-weight:800; margin-top:30px; cursor:pointer;">LOGOUT</button>
+                <button onclick="logout()" style="background:none; border:none; color:var(--danger); font-size:11px; font-weight:800; margin-top:30px; cursor:pointer;">SECURE LOGOUT</button>
             </div>
         </div>
     </div>
 
     <script>
-        Backendless.initApp("EAE10E02-8554-43FA-A445-17B496B2F52E", "7905FB19-9C35-4313-976B-1AE613B9A276");
+        // Safety initialization
+        function init() {
+            if (typeof Backendless === 'undefined') { setTimeout(init, 100); return; }
+            Backendless.initApp("EAE10E02-8554-43FA-A445-17B496B2F52E", "7905FB19-9C35-4313-976B-1AE613B9A276");
+        }
+        init();
 
         function toggleAuth(isReg) {
-            document.getElementById('auth-title').innerText = isReg ? "Register" : "Sign In";
+            document.getElementById('auth-title').innerText = isReg ? "Create Account" : "Sign In";
             document.getElementById('name-field').style.display = isReg ? "block" : "none";
             document.getElementById('login-btns').style.display = isReg ? "none" : "block";
             document.getElementById('reg-btns').style.display = isReg ? "block" : "none";
@@ -117,7 +128,7 @@
                 const user = await Backendless.UserService.login(email, pass, true);
                 enterDashboard(user);
             } catch (err) {
-                if(err.code === 3002) { await Backendless.UserService.logout(); alert("Session Reset. Try again."); }
+                if(err.code === 3002) { await Backendless.UserService.logout(); alert("Session reset. Please login again."); }
                 else alert(err.message);
             }
         }
@@ -128,7 +139,9 @@
             user.password = document.getElementById('password').value;
             user.name = document.getElementById('reg-name').value;
             user.balance = 0;
-            Backendless.UserService.register(user).then(() => { alert("Account Created!"); toggleAuth(false); }).catch(e => alert(e.message));
+            Backendless.UserService.register(user).then(() => { 
+                alert("Success! Now please Sign In."); toggleAuth(false); 
+            }).catch(e => alert(e.message));
         }
 
         function enterDashboard(user) {
@@ -136,8 +149,9 @@
             document.getElementById('dashboard').style.display = 'block';
             document.getElementById('bal-display').innerText = "$" + (user.balance || 0).toLocaleString();
             
+            // ADMIN VS USER VIEW
             if (user.isAdmin === true) {
-                document.getElementById('welcome-msg').innerHTML = `Access: <b style="color:var(--danger);">Admin</b>`;
+                document.getElementById('welcome-msg').innerHTML = `Access: <b style="color:var(--danger);">Admin Panel</b>`;
                 document.getElementById('t-admin').style.display = 'block';
                 document.getElementById('t-trade').style.display = 'none';
                 document.getElementById('t-payout').style.display = 'none';
@@ -145,6 +159,8 @@
             } else {
                 document.getElementById('welcome-msg').innerHTML = `Hello, <b>${user.name || "User"}</b>`;
                 document.getElementById('t-admin').style.display = 'none';
+                document.getElementById('t-trade').style.display = 'block';
+                document.getElementById('t-payout').style.display = 'block';
                 switchTab('trade');
             }
             loadHistory();
@@ -154,24 +170,45 @@
             const uis = ['ui-trade', 'ui-history', 'ui-admin', 'ui-payout'];
             uis.forEach(id => document.getElementById(id).style.display = 'none');
             document.getElementById('ui-' + t).style.display = 'block';
-            ['t-trade', 't-history', 't-admin', 't-payout'].forEach(id => document.getElementById(id).className = 'tab');
+            
+            ['t-trade', 't-history', 't-admin', 't-payout'].forEach(id => {
+                const tab = document.getElementById(id);
+                if(tab) tab.className = 'tab';
+            });
             document.getElementById('t-' + t).className = 'tab active-tab';
+            
             if(t === 'history') loadHistory();
             if(t === 'admin') loadAdmin();
         }
 
         async function submitTrade() {
             const user = await Backendless.UserService.getCurrentUser();
-            const data = { asset: document.getElementById('asset').value, amount: Number(document.getElementById('amt').value), status: "Pending", userEmail: user.email };
-            Backendless.Data.of("Trades").save(data).then(() => { alert("Trade Sent!"); switchTab('history'); });
+            const data = { 
+                asset: document.getElementById('asset').value, 
+                amount: Number(document.getElementById('amt').value), 
+                status: "Pending", 
+                userEmail: user.email 
+            };
+            if(!data.asset || !data.amount) return alert("Fill all fields");
+            Backendless.Data.of("Trades").save(data).then(() => { 
+                alert("Trade Sent!"); switchTab('history'); 
+            }).catch(e => alert(e.message));
         }
 
         async function submitPayout() {
             const user = await Backendless.UserService.getCurrentUser();
             const amt = Number(document.getElementById('payout-amt').value);
             if(amt > user.balance) return alert("Insufficient Balance");
-            const data = { amount: amt, destination: document.getElementById('payout-dest').value, status: "Pending", userEmail: user.email };
-            Backendless.Data.of("Payouts").save(data).then(() => { alert("Payout Requested!"); switchTab('history'); });
+            
+            const data = { 
+                amount: amt, 
+                destination: document.getElementById('payout-dest').value, 
+                status: "Pending", 
+                userEmail: user.email 
+            };
+            Backendless.Data.of("Withdrawals").save(data).then(() => { 
+                alert("Withdrawal Requested!"); switchTab('history'); 
+            }).catch(e => alert(e.message));
         }
 
         function loadHistory() {
@@ -179,9 +216,10 @@
                 const query = Backendless.DataQueryBuilder.create().setWhereClause(`userEmail = '${user.email}'`);
                 Backendless.Data.of("Trades").find(query).then(trades => {
                     const list = document.getElementById('history-list');
-                    list.innerHTML = trades.length ? "" : "No activity.";
+                    list.innerHTML = trades.length ? "" : "<p style='font-size:12px; color:gray;'>No activity recorded.</p>";
                     trades.forEach(t => {
-                        list.innerHTML += `<div class="history-item"><div><b>${t.asset}</b><br>$${t.amount}</div><div class="status-badge ${t.status.toLowerCase()}">${t.status}</div></div>`;
+                        const s = (t.status || 'Pending').toLowerCase();
+                        list.innerHTML += `<div class="history-item"><div><b>${t.asset}</b><br><small>$${t.amount}</small></div><div class="status-badge ${s}">${t.status}</div></div>`;
                     });
                 });
             });
@@ -193,37 +231,47 @@
             const query = Backendless.DataQueryBuilder.create().setWhereClause(where);
             
             const trades = await Backendless.Data.of("Trades").find(query);
-            const payouts = await Backendless.Data.of("Payouts").find(query);
+            const draws = await Backendless.Data.of("Withdrawals").find(query);
             
-            let html = '<h5 style="color:var(--primary);">TRADES</h5>';
+            let html = '<h5 style="color:var(--primary); margin:0 0 10px 0;">PENDING TRADES</h5>';
+            if(trades.length === 0) html += '<p style="font-size:11px; color:gray;">None.</p>';
             trades.forEach(t => {
-                html += `<div class="admin-card"><b>${t.userEmail}</b><br>${t.asset}: $${t.amount}<br><button onclick="approveTrade('${t.objectId}')">Approve</button></div>`;
+                html += `<div class="admin-card"><b>${t.userEmail}</b><br>${t.asset}: $${t.amount}<br><button onclick="approveTrade('${t.objectId}','${t.userEmail}',${t.amount})" style="background:var(--success); color:white; border:none; padding:8px; border-radius:8px; cursor:pointer; margin-top:5px; width:100%;">Approve & Pay</button></div>`;
             });
             
-            html += '<h5 style="color:var(--danger); margin-top:20px;">PAYOUTS</h5>';
-            payouts.forEach(p => {
-                html += `<div class="admin-card"><b>${p.userEmail}</b><br>Send $${p.amount} to:<br><small>${p.destination}</small><br><button onclick="confirmPayout('${p.objectId}','${p.userEmail}',${p.amount})">Confirm Sent</button></div>`;
+            html += '<h5 style="color:var(--danger); margin:20px 0 10px 0;">WITHDRAWAL REQUESTS</h5>';
+            if(draws.length === 0) html += '<p style="font-size:11px; color:gray;">None.</p>';
+            draws.forEach(p => {
+                html += `<div class="admin-card"><b>${p.userEmail}</b><br>Requesting $${p.amount}<br><small>${p.destination}</small><br><button onclick="confirmPayout('${p.objectId}','${p.userEmail}',${p.amount})" style="background:var(--primary); color:white; border:none; padding:8px; border-radius:8px; cursor:pointer; margin-top:5px; width:100%;">Confirm Sent</button></div>`;
             });
             document.getElementById('admin-list').innerHTML = html;
         }
 
-        async function approveTrade(id) {
+        async function approveTrade(id, email, amt) {
             const t = await Backendless.Data.of("Trades").findById(id);
             t.status = "Completed";
             await Backendless.Data.of("Trades").save(t);
-            alert("Approved!"); loadAdmin();
+            // Add to balance
+            const query = Backendless.DataQueryBuilder.create().setWhereClause(`email = '${email}'`);
+            const users = await Backendless.Data.of("Users").find(query);
+            const user = users[0];
+            user.balance = (user.balance || 0) + amt;
+            await Backendless.Data.of("Users").save(user);
+            alert("Approved! Balance updated."); loadAdmin();
         }
 
         async function confirmPayout(id, email, amt) {
-            if(!confirm("Deduct from balance and confirm sent?")) return;
-            const p = await Backendless.Data.of("Payouts").findById(id);
+            if(!confirm("Confirm you have sent the funds?")) return;
+            const p = await Backendless.Data.of("Withdrawals").findById(id);
             p.status = "Completed";
-            await Backendless.Data.of("Payouts").save(p);
-            const users = await Backendless.Data.of("Users").find(Backendless.DataQueryBuilder.create().setWhereClause(`email = '${email}'`));
+            await Backendless.Data.of("Withdrawals").save(p);
+            // Deduct from balance
+            const query = Backendless.DataQueryBuilder.create().setWhereClause(`email = '${email}'`);
+            const users = await Backendless.Data.of("Users").find(query);
             const user = users[0];
             user.balance = (user.balance || 0) - amt;
             await Backendless.Data.of("Users").save(user);
-            alert("Payout Done!"); loadAdmin();
+            alert("Withdrawal Finalized!"); loadAdmin();
         }
 
         function logout() { Backendless.UserService.logout().then(() => location.reload()); }

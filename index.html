@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nelson Xchange | Premium OTC</title>
+    <title>Nelson Xchange | Professional OTC</title>
     <script src="https://api.backendless.com/sdk/js/latest/backendless.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -70,7 +70,7 @@
                 <div class="section">
                     <h4 style="margin: 0 0 10px 0;">New Trade</h4>
                     <select id="trade-category" onchange="toggleUpload()">
-                        <option value="Crypto">Crypto (BTC/USDT)</option>
+                        <option value="Crypto">Crypto</option>
                         <option value="Giftcard">Gift Card</option>
                     </select>
                     <input id="asset-name" placeholder="Asset Name">
@@ -80,7 +80,7 @@
                 </div>
                 <div class="section">
                     <h4 style="margin:0;">Recent Trades</h4>
-                    <table><thead><tr><th>Asset</th><th>Amt</th><th>Status</th><th>Del</th></tr></thead><tbody id="trade-history-body"></tbody></table>
+                    <table><thead><tr><th>Asset</th><th>Amt</th><th>Status</th></tr></thead><tbody id="trade-history-body"></tbody></table>
                 </div>
             </div>
 
@@ -119,12 +119,13 @@
             const email = document.getElementById("email").value;
             const pass = document.getElementById("password").value;
             Backendless.UserService.login(email, pass, true).then(user => {
-                userEmail = user.email; currentBalance = Number(user.balance || 0);
+                userEmail = user.email; 
+                currentBalance = Number(user.balance || 0);
                 document.getElementById("auth-screen").style.display = "none";
                 document.getElementById("dashboard-screen").style.display = "block";
                 document.getElementById("user-email-display").innerText = userEmail;
                 updateBalanceDisplay(currentBalance);
-                refreshHistory(); setInterval(refreshHistory, 15000);
+                refreshHistory(); setInterval(refreshHistory, 10000);
             }).catch(err => alert(err.message));
         }
 
@@ -176,15 +177,15 @@
                 const tbody = document.getElementById("trade-history-body");
                 tbody.innerHTML = "";
                 trades.forEach(t => {
-                    const amt = Number(t.amount !== undefined ? t.amount : (t.Amount || 0));
+                    const amt = Number(t.amount !== undefined ? t.amount : (t.Amount !== undefined ? t.Amount : 0));
                     const stat = t.status || t.Status || "Pending";
-                    const isPaid = t.paidOut !== undefined ? t.paidOut : (t.PaidOut || false);
+                    const isPaid = t.paidOut !== undefined ? t.paidOut : (t.PaidOut !== undefined ? t.PaidOut : false);
 
-                    if (stat === "Completed" && isPaid === false) { processPayout(t, amt); }
+                    if (stat === "Completed" && isPaid === false) { 
+                        processPayout(t, amt); 
+                    }
 
-                    const canDel = (stat === "Completed" || stat === "Rejected");
-                    const btn = canDel ? `<button onclick="deleteRow('Trades', '${t.objectId}')" style="color:var(--danger); background:none; border:none; cursor:pointer;">🗑️</button>` : "🔒";
-                    tbody.innerHTML += `<tr><td>${t.asset || t.Asset}</td><td>$${amt}</td><td><span class="status-badge status-${stat.toLowerCase()}">${stat}</span></td><td>${btn}</td></tr>`;
+                    tbody.innerHTML += `<tr><td>${t.asset || t.Asset || "Asset"}</td><td>$${amt.toLocaleString()}</td><td><span class="status-badge status-${stat.toLowerCase()}">${stat}</span></td></tr>`;
                 });
             });
 
@@ -199,8 +200,10 @@
 
         function processPayout(trade, amt) {
             Backendless.UserService.getCurrentUser().then(user => {
-                const newTotal = Number(user.balance || 0) + Number(amt);
-                user.balance = newTotal;
+                const reward = Number(amt);
+                const current = Number(user.balance || 0);
+                user.balance = current + reward;
+
                 Backendless.UserService.update(user).then(upd => {
                     trade.paidOut = true;
                     Backendless.Data.of("Trades").save(trade).then(() => {
@@ -208,10 +211,6 @@
                     });
                 });
             });
-        }
-
-        function deleteRow(table, id) {
-            if (confirm("Delete record?")) Backendless.Data.of(table).remove({ objectId: id }).then(() => refreshHistory());
         }
     </script>
 </body>

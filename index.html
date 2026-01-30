@@ -3,96 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nelson Xchange | Secure OTC Terminal</title>
+    <title>Nelson Xchange | OTC Terminal</title>
     <script src="https://api.backendless.com/sdk/js/latest/backendless.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #4338ca; --success: #059669; --danger: #dc2626; --bg: #f8fafc; --text: #1e293b; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         .container { width: 100%; max-width: 440px; padding: 20px; box-sizing: border-box; }
-        .box { background: white; padding: 40px 30px; border-radius: 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; }
+        .box { background: white; padding: 30px; border-radius: 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; margin-bottom: 20px; }
         
-        /* Professional Input Styling */
         .input-group { text-align: left; margin-bottom: 15px; }
-        label { font-size: 11px; font-weight: 800; color: #64748b; letter-spacing: 0.05em; text-transform: uppercase; }
-        input { width: 100%; padding: 14px; margin-top: 6px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 15px; box-sizing: border-box; transition: 0.2s; }
-        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px rgba(67, 56, 202, 0.1); }
+        label { font-size: 11px; font-weight: 800; color: #64748b; letter-spacing: 0.05em; }
+        input { width: 100%; padding: 14px; margin-top: 6px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 15px; box-sizing: border-box; }
         
-        /* Strength Meter */
-        .meter-container { height: 4px; background: #e2e8f0; margin-top: 8px; border-radius: 2px; overflow: hidden; display: none; }
-        #meter-bar { height: 100%; width: 0%; transition: 0.4s ease; }
-
-        .btn { width: 100%; padding: 16px; border: none; border-radius: 14px; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
         
-        /* Dashboard Styling */
-        .wallet-card { background: #1e293b; color: white; padding: 25px; border-radius: 24px; text-align: left; margin: 20px 0; }
-        .wallet-card h1 { color: #38bdf8; font-size: 36px; margin: 5px 0 0 0; font-weight: 800; }
+        .wallet-card { background: #1e293b; color: white; padding: 25px; border-radius: 24px; text-align: left; margin: 15px 0; }
+        .wallet-card h1 { color: #38bdf8; font-size: 36px; margin: 5px 0 0 0; }
+        
         .tab-bar { display: flex; background: #f1f5f9; padding: 5px; border-radius: 16px; gap: 5px; margin-bottom: 20px; }
-        .tab { flex: 1; padding: 12px; border: none; border-radius: 12px; font-weight: 700; font-size: 12px; cursor: pointer; background: transparent; color: #64748b; text-transform: uppercase; }
+        .tab { flex: 1; padding: 12px; border: none; border-radius: 12px; font-weight: 700; font-size: 11px; cursor: pointer; background: transparent; color: #64748b; text-transform: uppercase; }
         .active-tab { background: white; color: var(--primary); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+
+        /* History Table */
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; text-align: left; }
+        .status-badge { font-size: 10px; padding: 4px 8px; border-radius: 6px; font-weight: 800; }
+        .pending { background: #fef3c7; color: #92400e; }
+        .completed { background: #d1fae5; color: #065f46; }
     </style>
 </head>
 <body>
 
     <div class="container">
         <div id="auth-screen" class="box">
-            <h2 id="auth-title">Security Sign In</h2>
-            <p id="auth-subtitle" style="font-size:14px; color:#64748b; margin-bottom:30px;">Access your secure OTC terminal</p>
-
+            <h2 id="auth-title">Sign In</h2>
             <div id="name-field" class="input-group" style="display:none;">
-                <label>Full Name</label>
-                <input id="reg-name" type="text" placeholder="e.g. Nelson Oghenevwede">
+                <label>FULL NAME</label>
+                <input id="reg-name" type="text" placeholder="John Doe">
             </div>
-
             <div class="input-group">
-                <label>Email Address</label>
+                <label>EMAIL ADDRESS</label>
                 <input id="email" type="email" placeholder="name@email.com">
             </div>
-
             <div class="input-group">
-                <label>Password</label>
-                <input id="password" type="password" placeholder="••••••••" oninput="updateStrength(this.value)">
-                <div class="meter-container" id="meter-wrap"><div id="meter-bar"></div></div>
+                <label>PASSWORD</label>
+                <input id="password" type="password" placeholder="••••••••">
             </div>
-
             <div id="login-btns">
-                <button class="btn btn-primary" onclick="login()">Enter Terminal</button>
-                <p style="font-size:13px; margin-top:20px; color:#64748b;">New user? <span style="color:var(--primary); font-weight:700; cursor:pointer;" onclick="toggleAuth(true)">Register Account</span></p>
+                <button class="btn btn-primary" onclick="login()">Login</button>
+                <p style="font-size:12px; margin-top:15px;">New? <span style="color:var(--primary); font-weight:700; cursor:pointer;" onclick="toggleAuth(true)">Create Account</span></p>
             </div>
-
             <div id="reg-btns" style="display:none;">
-                <button class="btn btn-primary" style="background:var(--success);" onclick="register()">Create Account</button>
-                <p style="font-size:13px; margin-top:20px; color:#64748b;">Member? <span style="color:var(--primary); font-weight:700; cursor:pointer;" onclick="toggleAuth(false)">Login</span></p>
+                <button class="btn btn-primary" style="background:var(--success);" onclick="register()">Register</button>
+                <p style="font-size:12px; margin-top:15px;">Member? <span style="color:var(--primary); font-weight:700; cursor:pointer;" onclick="toggleAuth(false)">Sign In</span></p>
             </div>
         </div>
 
         <div id="dashboard" style="display:none; width:100%;">
             <div class="box">
+                <p id="welcome-msg" style="text-align:left; font-size:14px; margin:0;"></p>
                 <div class="wallet-card">
-                    <p style="margin:0; font-size:11px; font-weight:800; opacity:0.6; letter-spacing: 0.1em;">ACTIVE BALANCE</p>
+                    <p style="margin:0; font-size:11px; font-weight:800; opacity:0.6;">BALANCE</p>
                     <h1 id="bal-display">$0.00</h1>
                 </div>
 
                 <div class="tab-bar">
-                    <button id="tab-trade" class="tab active-tab" onclick="showTab('trade')">Trade</button>
-                    <button id="tab-payout" class="tab" onclick="showTab('payout')">Payout</button>
-                    <button id="tab-admin" class="tab" onclick="showTab('admin')" style="display:none; color:var(--danger);">Admin</button>
+                    <button id="t-trade" class="tab active-tab" onclick="switchTab('trade')">Trade</button>
+                    <button id="t-history" class="tab" onclick="switchTab('history')">History</button>
+                    <button id="t-admin" class="tab" onclick="switchTab('admin')" style="display:none; color:var(--danger);">Admin</button>
                 </div>
 
                 <div id="ui-trade">
-                    <input id="asset" placeholder="Asset (BTC, iTunes, etc)">
+                    <input id="asset" placeholder="Asset (BTC, ETH, etc)">
                     <input id="amt" type="number" placeholder="Value in USD">
-                    <button class="btn btn-primary" onclick="submitTrade()">Send for Review</button>
+                    <button class="btn btn-primary" onclick="submitTrade()">Submit Review</button>
+                </div>
+
+                <div id="ui-history" style="display:none;">
+                    <h4 style="text-align:left; margin-bottom:10px;">Recent Activity</h4>
+                    <div id="history-list"></div>
                 </div>
 
                 <div id="ui-admin" style="display:none; text-align:left;">
-                    <h4 style="color:var(--danger); border-bottom:1px solid #eee; padding-bottom:10px;">Pending Approvals</h4>
+                    <h4 style="color:var(--danger);">Pending Trades</h4>
                     <div id="admin-list"></div>
                 </div>
 
-                <button onclick="logout()" style="background:none; border:none; color:var(--danger); font-size:12px; font-weight:800; margin-top:40px; cursor:pointer; text-transform: uppercase;">Secure Logout</button>
+                <button onclick="logout()" style="background:none; border:none; color:var(--danger); font-size:11px; font-weight:800; margin-top:30px; cursor:pointer;">LOGOUT</button>
             </div>
         </div>
     </div>
@@ -100,18 +98,8 @@
     <script>
         Backendless.initApp("EAE10E02-8554-43FA-A445-17B496B2F52E", "7905FB19-9C35-4313-976B-1AE613B9A276");
 
-        function updateStrength(p) {
-            const bar = document.getElementById('meter-bar');
-            const wrap = document.getElementById('meter-wrap');
-            if(!p) { wrap.style.display = 'none'; return; }
-            wrap.style.display = 'block';
-            let s = 0; if(p.length > 6) s++; if(/[A-Z]/.test(p)) s++; if(/[0-9]/.test(p)) s++;
-            const colors = ["#e2e8f0", "#dc2626", "#d97706", "#059669"];
-            bar.style.width = (s * 33.3) + "%"; bar.style.backgroundColor = colors[s];
-        }
-
         function toggleAuth(isReg) {
-            document.getElementById('auth-title').innerText = isReg ? "Register Account" : "Security Sign In";
+            document.getElementById('auth-title').innerText = isReg ? "Register" : "Sign In";
             document.getElementById('name-field').style.display = isReg ? "block" : "none";
             document.getElementById('login-btns').style.display = isReg ? "none" : "block";
             document.getElementById('reg-btns').style.display = isReg ? "block" : "none";
@@ -124,11 +112,8 @@
                 const user = await Backendless.UserService.login(email, pass, true);
                 enterDashboard(user);
             } catch (err) {
-                // AUTOMATIC LOGOUT FIX: If already logged in, force logout and try again
-                if(err.code === 3002) { 
-                    await Backendless.UserService.logout();
-                    alert("Session reset for security. Please click Login once more.");
-                } else { alert("Login Failed: " + err.message); }
+                if(err.code === 3002) { await Backendless.UserService.logout(); alert("Session Reset. Try again."); }
+                else alert(err.message);
             }
         }
 
@@ -136,11 +121,10 @@
             const user = new Backendless.User();
             user.email = document.getElementById('email').value;
             user.password = document.getElementById('password').value;
-            user.name = document.getElementById('reg-name').value; // Save full name
+            user.name = document.getElementById('reg-name').value;
             user.balance = 0;
-
             Backendless.UserService.register(user).then(() => {
-                alert("Account Created! You can now Sign In."); toggleAuth(false);
+                alert("Account Created!"); toggleAuth(false);
             }).catch(e => alert(e.message));
         }
 
@@ -148,27 +132,71 @@
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
             document.getElementById('bal-display').innerText = "$" + (user.balance || 0).toLocaleString();
-            // Show Admin if isAdmin checkbox is checked in Backendless
-            if(user.isAdmin === true || user.IsAdmin === true) document.getElementById('tab-admin').style.display = 'block';
+            
+            const welcome = document.getElementById('welcome-msg');
+            const name = user.name || "User";
+            
+            // Strict Admin Check
+            if(user.isAdmin === true) {
+                welcome.innerHTML = `Welcome back, <b style="color:var(--danger);">Admin ${name}</b>`;
+                document.getElementById('t-admin').style.display = 'block';
+            } else {
+                welcome.innerHTML = `Hello, <b>${name}</b>`;
+                document.getElementById('t-admin').style.display = 'none';
+            }
+            loadHistory();
         }
 
-        function showTab(t) {
-            document.getElementById('ui-trade').style.display = t === 'trade' ? 'block' : 'none';
-            document.getElementById('ui-admin').style.display = t === 'admin' ? 'block' : 'none';
-            document.getElementById('tab-trade').className = t === 'trade' ? 'tab active-tab' : 'tab';
-            document.getElementById('tab-admin').className = t === 'admin' ? 'tab active-tab' : 'tab';
-            if(t === 'admin') loadAdminData();
+        function switchTab(t) {
+            const tabs = ['ui-trade', 'ui-history', 'ui-admin'];
+            tabs.forEach(id => document.getElementById(id).style.display = 'none');
+            document.getElementById('ui-' + t).style.display = 'block';
+            
+            document.getElementById('t-trade').className = t === 'trade' ? 'tab active-tab' : 'tab';
+            document.getElementById('t-history').className = t === 'history' ? 'tab active-tab' : 'tab';
+            document.getElementById('t-admin').className = t === 'admin' ? 'tab active-tab' : 'tab';
+            
+            if(t === 'history') loadHistory();
+            if(t === 'admin') loadAdmin();
         }
 
-        function loadAdminData() {
+        function loadHistory() {
+            Backendless.UserService.getCurrentUser().then(user => {
+                const query = Backendless.DataQueryBuilder.create().setWhereClause(`userEmail = '${user.email}'`);
+                Backendless.Data.of("Trades").find(query).then(trades => {
+                    const list = document.getElementById('history-list');
+                    list.innerHTML = trades.length ? "" : "<p style='font-size:12px;'>No activity yet.</p>";
+                    trades.forEach(t => {
+                        const statusClass = t.status === 'Completed' ? 'completed' : 'pending';
+                        list.innerHTML += `<div class="history-item">
+                            <div><b>${t.asset}</b><br><small style="color:gray;">$${t.amount}</small></div>
+                            <div class="status-badge ${statusClass}">${t.status}</div>
+                        </div>`;
+                    });
+                });
+            });
+        }
+
+        function submitTrade() {
+            const user = Backendless.UserService.getCurrentUser().then(user => {
+                const data = { 
+                    asset: document.getElementById('asset').value, 
+                    amount: Number(document.getElementById('amt').value),
+                    status: "Pending", userEmail: user.email
+                };
+                Backendless.Data.of("Trades").save(data).then(() => { alert("Trade Sent!"); switchTab('history'); });
+            });
+        }
+
+        function loadAdmin() {
             const query = Backendless.DataQueryBuilder.create().setWhereClause("status = 'Pending'");
             Backendless.Data.of("Trades").find(query).then(trades => {
                 const list = document.getElementById('admin-list');
-                list.innerHTML = trades.length ? "" : "<p style='font-size:12px; color:gray;'>No pending trades.</p>";
+                list.innerHTML = trades.length ? "" : "<p style='font-size:12px;'>All clear!</p>";
                 trades.forEach(t => {
-                    list.innerHTML += `<div style="padding:15px; border-radius:12px; background:#f8fafc; margin-bottom:10px; font-size:13px; border:1px solid #eee;">
-                        <b>User: ${t.userEmail}</b><br>Asset: ${t.asset} | Value: $${t.amount}<br>
-                        <button onclick="approve('${t.objectId}')" style="margin-top:10px; background:var(--success); color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; font-weight:700;">Approve & Pay</button>
+                    list.innerHTML += `<div style="background:#f8fafc; padding:15px; border-radius:12px; margin-bottom:10px; font-size:12px;">
+                        <b>${t.userEmail}</b><br>${t.asset}: $${t.amount}<br>
+                        <button onclick="approve('${t.objectId}')" style="background:var(--success); color:white; border:none; padding:5px 10px; border-radius:6px; margin-top:8px;">Approve</button>
                     </div>`;
                 });
             });
@@ -177,7 +205,7 @@
         function approve(id) {
             Backendless.Data.of("Trades").findById(id).then(t => {
                 t.status = "Completed";
-                Backendless.Data.of("Trades").save(t).then(() => { alert("Trade Approved!"); loadAdminData(); });
+                Backendless.Data.of("Trades").save(t).then(() => { alert("Approved!"); loadAdmin(); });
             });
         }
 

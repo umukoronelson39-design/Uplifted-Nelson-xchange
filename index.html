@@ -24,27 +24,24 @@
         button { width: 100%; padding: 16px; margin: 10px 0; border: none; border-radius: 12px; cursor: pointer; font-weight: 700; transition: 0.2s; }
         .login-btn, .trade-btn { background: var(--primary); color: white; }
         .withdraw-btn { background: var(--success); color: white; }
-        .wallet-card { background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%); color: white; padding: 24px; border-radius: 20px; margin: 20px 0; text-align: left; cursor: pointer; transition: 0.3s; }
-        .wallet-card:active { transform: scale(0.98); opacity: 0.9; }
+        .wallet-card { background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%); color: white; padding: 24px; border-radius: 20px; margin: 20px 0; text-align: left; cursor: pointer; }
         .wallet-card h1 { font-size: 32px; margin: 8px 0 0 0; font-weight: 700; }
         .tab-container { display: flex; background: #f1f5f9; padding: 4px; border-radius: 14px; margin-bottom: 20px; }
-        .tab { flex: 1; padding: 10px; font-size: 13px; background: transparent; border-radius: 10px; color: var(--text-muted); border: none; font-weight: 600; cursor: pointer; }
+        .tab { flex: 1; padding: 10px; font-size: 11px; background: transparent; border-radius: 10px; color: var(--text-muted); border: none; font-weight: 700; cursor: pointer; }
         .active-tab { background: var(--card); color: var(--primary); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         .section { background: #fff; padding: 18px; border: 1px solid #f1f5f9; border-radius: 16px; margin-top: 20px; text-align: left; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
         td { padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
-        .status-badge { font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; text-transform: capitalize; }
+        .status-badge { font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 6px; text-transform: capitalize; }
         .status-pending { background: #fffbeb; color: var(--warning); }
         .status-completed { background: #ecfdf5; color: var(--success); }
-        .status-rejected { background: #fef2f2; color: var(--danger); }
         .whatsapp-link { background: #25D366; color: white; text-decoration: none; display: flex; align-items: center; justify-content: center; padding: 14px; border-radius: 12px; margin-top: 20px; font-weight: 600; }
+        .admin-btn { background: var(--success); color: white; padding: 6px 10px; border-radius: 8px; font-size: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="ticker-wrap">
-        <div class="ticker" id="crypto-ticker">Syncing market data...</div>
-    </div>
+    <div class="ticker-wrap"><div class="ticker" id="crypto-ticker">Syncing...</div></div>
 
     <div class="container">
         <div id="auth-screen" class="box">
@@ -56,66 +53,56 @@
         </div>
 
         <div id="dashboard-screen" class="box" style="display:none;">
-            <p id="user-email-display" style="color: var(--text-muted); font-size: 11px; margin-bottom:10px;"></p>
-            
-            <div class="wallet-card" onclick="refreshHistory()" title="Click to sync balance">
-                <p style="margin:0; font-size: 11px; opacity: 0.9; font-weight: 600;">AVAILABLE BALANCE (TAP TO SYNC)</p>
+            <div class="wallet-card" onclick="refreshHistory()">
+                <p style="margin:0; font-size: 11px; opacity: 0.9; font-weight: 600;">AVAILABLE BALANCE</p>
                 <h1 id="balance-display">$0.00</h1>
             </div>
 
             <div class="tab-container">
-                <button id="trade-tab-btn" class="tab active-tab" onclick="showTab('trade')">Sell Asset</button>
+                <button id="trade-tab-btn" class="tab active-tab" onclick="showTab('trade')">Sell</button>
                 <button id="withdraw-tab-btn" class="tab" onclick="showTab('withdraw')">Cash Out</button>
+                <button id="admin-tab-btn" class="tab" onclick="showTab('admin')" style="display:none; color:var(--danger);">Admin Panel</button>
             </div>
 
             <div id="trade-tab-ui">
                 <div class="section">
-                    <h4 style="margin: 0 0 10px 0;">New Trade</h4>
-                    <select id="trade-category" onchange="toggleUpload()">
-                        <option value="Crypto">Crypto</option>
-                        <option value="Giftcard">Gift Card</option>
-                    </select>
+                    <h4 style="margin: 0 0 10px 0;">Submit Asset</h4>
+                    <select id="trade-category" onchange="toggleUpload()"><option value="Crypto">Crypto</option><option value="Giftcard">Gift Card</option></select>
                     <input id="asset-name" placeholder="Asset Name">
-                    <input id="trade-amount" type="number" placeholder="Value in USD">
-                    <div id="upload-container" style="display:none;"><input type="file" id="card-image" accept="image/*" style="display:none;"><label for="card-image" style="display:block; background:#f1f5f9; padding:12px; border-radius:10px; border:1px dashed #cbd5e1; cursor:pointer; text-align:center; font-size: 12px;">📸 Upload Proof</label></div>
-                    <button class="trade-btn" onclick="submitTrade()">Submit Trade</button>
+                    <input id="trade-amount" type="number" placeholder="Amount ($)">
+                    <div id="upload-container" style="display:none;"><input type="file" id="card-image" accept="image/*" style="display:none;"><label for="card-image" style="display:block; background:#f1f5f9; padding:12px; border-radius:10px; border:1px dashed #cbd5e1; cursor:pointer; text-align:center; font-size: 12px;">📸 Upload Image</label></div>
+                    <button class="trade-btn" onclick="submitTrade()">Send Trade</button>
                 </div>
                 <div class="section">
-                    <h4 style="margin:0;">Recent Trades</h4>
+                    <h4 style="margin:0;">My Trades</h4>
                     <table><thead><tr><th>Asset</th><th>Amt</th><th>Status</th></tr></thead><tbody id="trade-history-body"></tbody></table>
                 </div>
             </div>
 
             <div id="withdraw-tab-ui" style="display:none;">
                 <div class="section">
-                    <h4 style="margin: 0 0 10px 0;">Request Withdrawal</h4>
+                    <h4 style="margin:0 0 10px 0;">Withdraw</h4>
                     <input id="withdraw-amount" type="number" placeholder="Amount ($)">
-                    <textarea id="withdraw-details" placeholder="Bank or Wallet Details"></textarea>
-                    <button class="withdraw-btn" onclick="submitWithdrawal()">Send Request</button>
+                    <textarea id="withdraw-details" placeholder="Bank/Wallet Info"></textarea>
+                    <button class="withdraw-btn" onclick="submitWithdrawal()">Request Funds</button>
                 </div>
-                <div class="section">
-                    <h4 style="margin:0;">Withdrawal History</h4>
-                    <table id="w-table"><thead><tr><th>Method</th><th>Amt</th><th>Status</th></tr></thead><tbody id="withdraw-history-body"></tbody></table>
+            </div>
+
+            <div id="admin-tab-ui" style="display:none;">
+                <div class="section" style="border: 1px solid var(--danger);">
+                    <h4 style="margin:0; color:var(--danger);">Admin: Pending Trades</h4>
+                    <table><thead><tr><th>User</th><th>Asset</th><th>Amt</th><th>Action</th></tr></thead><tbody id="admin-pending-body"></tbody></table>
                 </div>
             </div>
 
             <a href="https://wa.me/YOURNUMBER" class="whatsapp-link">💬 Live Support</a>
-            <button onclick="location.reload()" style="background:none; color:var(--danger); font-size: 12px; margin-top: 15px; font-weight:600;">Sign Out</button>
+            <button onclick="location.reload()" style="background:none; color:var(--danger); font-size: 11px; margin-top: 15px; font-weight:600;">Sign Out</button>
         </div>
     </div>
 
     <script>
         Backendless.initApp("EAE10E02-8554-43FA-A445-17B496B2F52E", "7905FB19-9C35-4313-976B-1AE613B9A276");
-        let userEmail = ""; let currentBalance = 0;
-
-        async function updateTicker() {
-            try {
-                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,tether&vs_currencies=usd');
-                const data = await res.json();
-                document.getElementById('crypto-ticker').innerHTML = `<span class="ticker-item">BTC: $${data.bitcoin.usd.toLocaleString()}</span><span class="ticker-item">ETH: $${data.ethereum.usd.toLocaleString()}</span><span class="ticker-item">USDT: $${data.tether.usd.toFixed(2)}</span>`;
-            } catch (e) {}
-        }
-        updateTicker(); setInterval(updateTicker, 60000);
+        let userEmail = ""; let currentBalance = 0; let isAdmin = false;
 
         function login() {
             const email = document.getElementById("email").value;
@@ -123,11 +110,14 @@
             Backendless.UserService.login(email, pass, true).then(user => {
                 userEmail = user.email; 
                 currentBalance = Number(user.balance || 0);
+                isAdmin = user.isAdmin || false;
+
+                if(isAdmin) document.getElementById('admin-tab-btn').style.display = 'block';
+                
                 document.getElementById("auth-screen").style.display = "none";
                 document.getElementById("dashboard-screen").style.display = "block";
-                document.getElementById("user-email-display").innerText = userEmail;
                 updateBalanceDisplay(currentBalance);
-                refreshHistory(); setInterval(refreshHistory, 15000); // 15s auto-sync
+                refreshHistory(); setInterval(refreshHistory, 15000);
             }).catch(err => alert(err.message));
         }
 
@@ -139,87 +129,68 @@
         function showTab(type) {
             document.getElementById('trade-tab-ui').style.display = type === 'trade' ? 'block' : 'none';
             document.getElementById('withdraw-tab-ui').style.display = type === 'withdraw' ? 'block' : 'none';
+            document.getElementById('admin-tab-ui').style.display = type === 'admin' ? 'block' : 'none';
+            
             document.getElementById('trade-tab-btn').className = type === 'trade' ? 'tab active-tab' : 'tab';
             document.getElementById('withdraw-tab-btn').className = type === 'withdraw' ? 'tab active-tab' : 'tab';
-        }
+            document.getElementById('admin-tab-btn').className = type === 'admin' ? 'tab active-tab' : 'tab';
 
-        function toggleUpload() { document.getElementById("upload-container").style.display = document.getElementById("trade-category").value === "Giftcard" ? "block" : "none"; }
+            if(type === 'admin') loadAdminData();
+        }
 
         async function submitTrade() {
             const asset = document.getElementById("asset-name").value;
             const amt = Number(document.getElementById("trade-amount").value);
-            if(!asset || amt <= 0) return alert("Enter valid details");
-            let fileUrl = "";
-            const fileInput = document.getElementById("card-image");
-            if (fileInput.files.length > 0) {
-                const uploaded = await Backendless.Files.upload(fileInput.files[0], "trades", true);
-                fileUrl = uploaded.fileURL;
-            }
-            const trade = { asset: asset, amount: amt, status: "Pending", userEmail: userEmail, proofImage: fileUrl, paidOut: false };
-            Backendless.Data.of("Trades").save(trade).then(() => { alert("Trade Submitted!"); refreshHistory(); });
-        }
-
-        async function submitWithdrawal() {
-            const amt = Number(document.getElementById("withdraw-amount").value);
-            const details = document.getElementById("withdraw-details").value;
-            if (amt <= 0 || amt > currentBalance) return alert("Insufficient funds");
-            const user = await Backendless.UserService.getCurrentUser();
-            user.balance = currentBalance - amt;
-            await Backendless.UserService.update(user);
-            updateBalanceDisplay(user.balance);
-            await Backendless.Data.of("Withdrawals").save({ amount: amt, method: "Withdrawal", details: details, userEmail: userEmail, status: "Pending" });
-            alert("Withdrawal request sent!"); refreshHistory();
+            if(!asset || amt <= 0) return alert("Fill all fields");
+            const trade = { asset: asset, amount: amt, status: "Pending", userEmail: userEmail, paidOut: false };
+            Backendless.Data.of("Trades").save(trade).then(() => { alert("Sent!"); refreshHistory(); });
         }
 
         function refreshHistory() {
             if(!userEmail) return;
             const query = Backendless.DataQueryBuilder.create().setWhereClause(`userEmail = '${userEmail}'`).setSortBy(["created DESC"]);
-            
             Backendless.Data.of("Trades").find(query).then(trades => {
                 const tbody = document.getElementById("trade-history-body");
                 tbody.innerHTML = "";
                 trades.forEach(t => {
-                    const amt = Number(t.amount !== undefined ? t.amount : (t.Amount !== undefined ? t.Amount : 0));
-                    const stat = t.status || t.Status || "Pending";
-                    const isPaid = t.paidOut !== undefined ? t.paidOut : (t.PaidOut !== undefined ? t.PaidOut : false);
-
-                    // LOGIC: If trade is Completed and not yet paid to balance
-                    if (stat === "Completed" && isPaid === false) { 
-                        processPayout(t, amt); 
-                    }
-
-                    tbody.innerHTML += `<tr><td>${t.asset || t.Asset || "Asset"}</td><td>$${amt.toLocaleString()}</td><td><span class="status-badge status-${stat.toLowerCase()}">${stat}</span></td></tr>`;
-                });
-            });
-
-            Backendless.Data.of("Withdrawals").find(query).then(list => {
-                const tbody = document.getElementById("withdraw-history-body");
-                tbody.innerHTML = "";
-                list.forEach(w => {
-                    tbody.innerHTML += `<tr><td>${w.method}</td><td>$${w.amount}</td><td><span class="status-badge status-${w.status.toLowerCase()}">${w.status}</span></td></tr>`;
+                    const amt = Number(t.amount || 0);
+                    const stat = t.status || "Pending";
+                    const isPaid = t.paidOut || false;
+                    if (stat === "Completed" && !isPaid) processPayout(t, amt);
+                    tbody.innerHTML += `<tr><td>${t.asset}</td><td>$${amt}</td><td><span class="status-badge status-${stat.toLowerCase()}">${stat}</span></td></tr>`;
                 });
             });
         }
 
         function processPayout(trade, amt) {
             Backendless.UserService.getCurrentUser().then(user => {
-                const startBal = Number(user.balance || 0);
-                const payout = Number(amt);
-                user.balance = startBal + payout;
-
-                // Sync to Users Table
+                user.balance = Number(user.balance || 0) + Number(amt);
                 Backendless.UserService.update(user).then(upd => {
-                    // Safety check: Mark trade as paid so it doesn't double-count
                     trade.paidOut = true;
-                    Backendless.Data.of("Trades").save(trade).then(() => {
-                        updateBalanceDisplay(upd.balance);
-                        console.log("Balance auto-updated!");
-                    });
-                }).catch(err => {
-                    console.log("Permission Error: Ensure Update is checked in Users table.");
+                    Backendless.Data.of("Trades").save(trade).then(() => updateBalanceDisplay(upd.balance));
                 });
             });
         }
+
+        function loadAdminData() {
+            const query = Backendless.DataQueryBuilder.create().setWhereClause("status = 'Pending'");
+            Backendless.Data.of("Trades").find(query).then(trades => {
+                const tbody = document.getElementById("admin-pending-body");
+                tbody.innerHTML = "";
+                trades.forEach(t => {
+                    tbody.innerHTML += `<tr><td style="font-size:9px;">${t.userEmail}</td><td>${t.asset}</td><td>$${t.amount}</td><td><button class="admin-btn" onclick="approveTrade('${t.objectId}')">Approve</button></td></tr>`;
+                });
+            });
+        }
+
+        function approveTrade(id) {
+            Backendless.Data.of("Trades").findById(id).then(t => {
+                t.status = "Completed";
+                Backendless.Data.of("Trades").save(t).then(() => { alert("Approved!"); loadAdminData(); });
+            });
+        }
+
+        function toggleUpload() { document.getElementById("upload-container").style.display = document.getElementById("trade-category").value === "Giftcard" ? "block" : "none"; }
     </script>
 </body>
 </html>

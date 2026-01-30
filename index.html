@@ -1,221 +1,78 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nelson Xchange | Master Admin Edition</title>
-    <script src="https://api.backendless.com/sdk/js/latest/backendless.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #4338ca; --success: #059669; --warning: #d97706; --danger: #dc2626;
-            --bg: #f8fafc; --card: #ffffff; --text-main: #1e293b; --text-muted: #64748b;
-        }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-main); margin: 0; display: flex; flex-direction: column; align-items: center; }
-        .ticker-wrap { width: 100%; overflow: hidden; background: #1e293b; color: #38bdf8; padding: 8px 0; font-size: 12px; font-weight: 700; position: sticky; top: 0; z-index: 100; }
-        .ticker { display: flex; white-space: nowrap; animation: ticker 25s linear infinite; }
-        .ticker-item { margin-right: 50px; }
-        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-        .container { width: 100%; max-width: 440px; padding: 20px; box-sizing: border-box; }
-        .box { background: var(--card); padding: 30px; border-radius: 24px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); text-align: center; }
-        .logo-circle { width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary), #6366f1); border-radius: 18px; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; color: white; font-weight: 800; font-size: 24px; }
-        h2 { font-weight: 800; letter-spacing: -0.025em; margin-bottom: 24px; }
-        input, select, textarea { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #e2e8f0; border-radius: 12px; background: #fcfcfd; font-size: 15px; box-sizing: border-box; }
-        button { width: 100%; padding: 16px; margin: 10px 0; border: none; border-radius: 12px; cursor: pointer; font-weight: 700; transition: 0.2s; }
-        .login-btn, .trade-btn { background: var(--primary); color: white; }
-        .withdraw-btn { background: var(--success); color: white; }
-        .wallet-card { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: white; padding: 24px; border-radius: 20px; margin: 20px 0; text-align: left; }
-        .wallet-card h1 { font-size: 32px; margin: 8px 0 0 0; font-weight: 700; color: #38bdf8; }
-        
-        /* Tab Bar */
-        .tab-container { display: flex; background: #f1f5f9; padding: 4px; border-radius: 14px; margin-bottom: 20px; gap: 4px; }
-        .tab { flex: 1; padding: 12px 5px; font-size: 11px; background: transparent; border-radius: 10px; color: var(--text-muted); border: none; font-weight: 700; cursor: pointer; text-transform: uppercase; }
-        .active-tab { background: var(--card); color: var(--primary); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        
-        .section { background: #fff; padding: 18px; border: 1px solid #f1f5f9; border-radius: 16px; margin-top: 20px; text-align: left; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
-        td { padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
-        .status-badge { font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 6px; text-transform: capitalize; }
-        .status-pending { background: #fffbeb; color: var(--warning); }
-        .status-completed { background: #ecfdf5; color: var(--success); }
-        
-        /* Admin Button Styling */
-        #admin-tab-btn { border: 1px solid var(--danger); color: var(--danger); }
-        .admin-approve-btn { background: var(--success); color: white; padding: 6px 12px; border-radius: 8px; font-size: 10px; border: none; cursor: pointer; }
-    </style>
-</head>
-<body>
-
-    <div class="ticker-wrap"><div class="ticker" id="crypto-ticker">Connecting to Market...</div></div>
-
-    <div class="container">
-        <div id="auth-screen" class="box">
-            <div class="logo-circle">NX</div>
-            <h2>Nelson Xchange</h2>
-            <input id="email" type="email" placeholder="Email Address">
-            <input id="password" type="password" placeholder="Password">
-            <button class="login-btn" onclick="login()">Open Terminal</button>
-        </div>
-
-        <div id="dashboard-screen" class="box" style="display:none;">
-            <div class="wallet-card" onclick="refreshHistory()">
-                <p style="margin:0; font-size: 11px; opacity: 0.8; font-weight: 600;">ACTIVE BALANCE</p>
-                <h1 id="balance-display">$0.00</h1>
-            </div>
-
-            <div class="tab-container">
-                <button id="trade-tab-btn" class="tab active-tab" onclick="showTab('trade')">Trade</button>
-                <button id="withdraw-tab-btn" class="tab" onclick="showTab('withdraw')">Payout</button>
-                <button id="admin-tab-btn" class="tab" onclick="showTab('admin')" style="display:none;">Admin</button>
-            </div>
-
-            <div id="trade-tab-ui">
-                <div class="section">
-                    <h4 style="margin: 0 0 10px 0;">Start Trade</h4>
-                    <select id="trade-category" onchange="toggleUpload()"><option value="Crypto">Crypto</option><option value="Giftcard">Gift Card</option></select>
-                    <input id="asset-name" placeholder="Asset Name (e.g. BTC, iTunes)">
-                    <input id="trade-amount" type="number" placeholder="Value in USD">
-                    <div id="upload-container" style="display:none;"><input type="file" id="card-image" accept="image/*" style="display:none;"><label for="card-image" style="display:block; background:#f8fafc; padding:15px; border-radius:12px; border:2px dashed #e2e8f0; cursor:pointer; text-align:center; font-size: 12px;">📸 Upload Proof</label></div>
-                    <button class="trade-btn" onclick="submitTrade()">Submit for Review</button>
-                </div>
-                <div class="section">
-                    <h4 style="margin:0;">Recent Activity</h4>
-                    <table><thead><tr><th>Asset</th><th>Value</th><th>Status</th></tr></thead><tbody id="trade-history-body"></tbody></table>
-                </div>
-            </div>
-
-            <div id="withdraw-tab-ui" style="display:none;">
-                <div class="section">
-                    <h4 style="margin:0 0 10px 0;">Cash Out</h4>
-                    <input id="withdraw-amount" type="number" placeholder="Amount ($)">
-                    <textarea id="withdraw-details" placeholder="Bank Details or Wallet Address"></textarea>
-                    <button class="withdraw-btn" onclick="submitWithdrawal()">Request Cashout</button>
-                </div>
-            </div>
-
-            <div id="admin-tab-ui" style="display:none;">
-                <div class="section" style="border: 1px solid var(--danger);">
-                    <h4 style="margin:0; color:var(--danger); text-align:center;">--- ADMIN CONTROL ---</h4>
-                    <p style="font-size: 10px; text-align: center; color: gray;">Review and pay all users from here</p>
-                    <table><thead><tr><th>User</th><th>Amt</th><th>Action</th></tr></thead><tbody id="admin-pending-body"></tbody></table>
-                </div>
-            </div>
-
-            <button onclick="location.reload()" style="background:none; color:var(--text-muted); font-size: 11px; margin-top: 30px;">Sign Out</button>
-        </div>
+<div id="auth-screen" class="box">
+    <div class="logo-circle">NX</div>
+    <h2 id="auth-title">Nelson Xchange</h2>
+    
+    <input id="email" type="email" placeholder="Email Address">
+    <input id="password" type="password" placeholder="Password">
+    
+    <div id="login-actions">
+        <button class="login-btn" onclick="login()">Enter Dashboard</button>
+        <p style="font-size: 12px; color: var(--text-muted);">New here? 
+            <span onclick="toggleAuth(true)" style="color: var(--primary); cursor: pointer; font-weight: 700;">Create Account</span>
+        </p>
     </div>
 
-    <script>
-        Backendless.initApp("EAE10E02-8554-43FA-A445-17B496B2F52E", "7905FB19-9C35-4313-976B-1AE613B9A276");
-        let userEmail = ""; let currentBalance = 0;
+    <div id="register-actions" style="display:none;">
+        <button class="login-btn" style="background: var(--success);" onclick="register()">Create My Account</button>
+        <p style="font-size: 12px; color: var(--text-muted);">Already have one? 
+            <span onclick="toggleAuth(false)" style="color: var(--primary); cursor: pointer; font-weight: 700;">Sign In</span>
+        </p>
+    </div>
+</div>
 
-        function login() {
-            const email = document.getElementById("email").value;
-            const pass = document.getElementById("password").value;
+<script>
+    // --- NEW AUTHENTICATION FUNCTIONS ---
 
-            Backendless.UserService.login(email, pass, true).then(user => {
+    // Switch between Login and Register views
+    function toggleAuth(isRegister) {
+        document.getElementById('auth-title').innerText = isRegister ? "Join Nelson Xchange" : "Nelson Xchange";
+        document.getElementById('login-actions').style.display = isRegister ? "none" : "block";
+        document.getElementById('register-actions').style.display = isRegister ? "block" : "none";
+    }
+
+    // Register a new user in Backendless
+    function register() {
+        const email = document.getElementById("email").value;
+        const pass = document.getElementById("password").value;
+
+        if (!email || !pass) return alert("Please fill in all fields");
+
+        const user = new Backendless.User();
+        user.email = email;
+        user.password = pass;
+        user.balance = 0; // Explicitly set starting balance
+
+        Backendless.UserService.register(user)
+            .then(res => {
+                alert("Account created successfully! You can now sign in.");
+                toggleAuth(false); // Send them back to login
+            })
+            .catch(err => {
+                alert("Registration Failed: " + err.message);
+            });
+    }
+
+    // Keep your existing login() function, but ensure it handles the balance correctly
+    function login() {
+        const email = document.getElementById("email").value;
+        const pass = document.getElementById("password").value;
+
+        Backendless.UserService.login(email, pass, true)
+            .then(user => {
                 userEmail = user.email;
                 currentBalance = Number(user.balance || 0);
-
-                // BRUTE FORCE ADMIN CHECK
-                const isAdmin = user.isAdmin || user.IsAdmin || user['isAdmin'] || false;
                 
-                if (isAdmin === true || isAdmin === "true") {
-                    document.getElementById('admin-tab-btn').style.display = "block";
+                // Admin check remains the same
+                const checkAdmin = user.isAdmin || user.IsAdmin || false;
+                if (checkAdmin === true) {
+                    document.getElementById('admin-tab-btn').style.display = 'block';
                 }
 
                 document.getElementById("auth-screen").style.display = "none";
                 document.getElementById("dashboard-screen").style.display = "block";
                 updateBalanceDisplay(currentBalance);
-                refreshHistory(); setInterval(refreshHistory, 15000);
-            }).catch(err => alert("Error: " + err.message));
-        }
-
-        function updateBalanceDisplay(amt) {
-            currentBalance = Number(amt || 0);
-            document.getElementById("balance-display").innerText = "$" + currentBalance.toLocaleString(undefined, {minimumFractionDigits: 2});
-        }
-
-        function showTab(type) {
-            document.getElementById('trade-tab-ui').style.display = type === 'trade' ? 'block' : 'none';
-            document.getElementById('withdraw-tab-ui').style.display = type === 'withdraw' ? 'block' : 'none';
-            document.getElementById('admin-tab-ui').style.display = type === 'admin' ? 'block' : 'none';
-            
-            document.getElementById('trade-tab-btn').className = type === 'trade' ? 'tab active-tab' : 'tab';
-            document.getElementById('withdraw-tab-btn').className = type === 'withdraw' ? 'tab active-tab' : 'tab';
-            document.getElementById('admin-tab-btn').className = type === 'admin' ? 'tab active-tab' : 'tab';
-
-            if(type === 'admin') loadAdminData();
-        }
-
-        async function submitTrade() {
-            const asset = document.getElementById("asset-name").value;
-            const amt = Number(document.getElementById("trade-amount").value);
-            if(!asset || amt <= 0) return alert("Please fill all fields correctly");
-            
-            const trade = { asset: asset, amount: amt, status: "Pending", userEmail: userEmail, paidOut: false };
-            Backendless.Data.of("Trades").save(trade).then(() => { 
-                alert("Trade submitted for review!"); 
-                refreshHistory(); 
-            });
-        }
-
-        function refreshHistory() {
-            if(!userEmail) return;
-            const query = Backendless.DataQueryBuilder.create().setWhereClause(`userEmail = '${userEmail}'`).setSortBy(["created DESC"]);
-            Backendless.Data.of("Trades").find(query).then(trades => {
-                const tbody = document.getElementById("trade-history-body");
-                tbody.innerHTML = "";
-                trades.forEach(t => {
-                    const amt = Number(t.amount || 0);
-                    const stat = t.status || "Pending";
-                    const isPaid = t.paidOut || false;
-
-                    // This handles the balance jump for the user
-                    if (stat === "Completed" && isPaid === false) { 
-                        processPayout(t, amt); 
-                    }
-
-                    tbody.innerHTML += `<tr><td>${t.asset}</td><td>$${amt}</td><td><span class="status-badge status-${stat.toLowerCase()}">${stat}</span></td></tr>`;
-                });
-            });
-        }
-
-        function processPayout(trade, amt) {
-            Backendless.UserService.getCurrentUser().then(user => {
-                const newBal = Number(user.balance || 0) + Number(amt);
-                user.balance = newBal;
-                Backendless.UserService.update(user).then(upd => {
-                    trade.paidOut = true;
-                    Backendless.Data.of("Trades").save(trade).then(() => updateBalanceDisplay(upd.balance));
-                });
-            });
-        }
-
-        function loadAdminData() {
-            const query = Backendless.DataQueryBuilder.create().setWhereClause("status = 'Pending'");
-            Backendless.Data.of("Trades").find(query).then(trades => {
-                const tbody = document.getElementById("admin-pending-body");
-                tbody.innerHTML = "";
-                trades.forEach(t => {
-                    tbody.innerHTML += `<tr><td style="font-size:9px;">${t.userEmail}</td><td>$${t.amount}</td><td><button class="admin-approve-btn" onclick="approveTrade('${t.objectId}')">Approve</button></td></tr>`;
-                });
-            });
-        }
-
-        function approveTrade(id) {
-            Backendless.Data.of("Trades").findById(id).then(t => {
-                t.status = "Completed";
-                Backendless.Data.of("Trades").save(t).then(() => { 
-                    alert("User has been paid!"); 
-                    loadAdminData(); 
-                });
-            });
-        }
-
-        function toggleUpload() { 
-            document.getElementById("upload-container").style.display = document.getElementById("trade-category").value === "Giftcard" ? "block" : "none"; 
-        }
-    </script>
-</body>
-</html>
+                refreshHistory();
+            })
+            .catch(err => alert("Login Error: " + err.message));
+    }
+</script>

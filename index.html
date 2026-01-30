@@ -1,78 +1,188 @@
-<div id="auth-screen" class="box">
-    <div class="logo-circle">NX</div>
-    <h2 id="auth-title">Nelson Xchange</h2>
-    
-    <input id="email" type="email" placeholder="Email Address">
-    <input id="password" type="password" placeholder="Password">
-    
-    <div id="login-actions">
-        <button class="login-btn" onclick="login()">Enter Dashboard</button>
-        <p style="font-size: 12px; color: var(--text-muted);">New here? 
-            <span onclick="toggleAuth(true)" style="color: var(--primary); cursor: pointer; font-weight: 700;">Create Account</span>
-        </p>
-    </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nelson Xchange | Secure OTC Terminal</title>
+    <script src="https://api.backendless.com/sdk/js/latest/backendless.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4338ca; --success: #059669; --warning: #d97706; --danger: #dc2626;
+            --bg: #f8fafc; --card: #ffffff; --text-main: #1e293b; --text-muted: #64748b;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-main); margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 440px; padding: 20px; box-sizing: border-box; }
+        
+        /* Auth Card */
+        .box { background: var(--card); padding: 40px 30px; border-radius: 32px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08); text-align: center; }
+        .logo-circle { width: 64px; height: 64px; background: linear-gradient(135deg, var(--primary), #6366f1); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: white; font-weight: 800; font-size: 26px; }
+        
+        h2 { font-weight: 800; letter-spacing: -0.025em; margin: 0; color: #0f172a; }
+        .subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 25px; margin-top: 8px; }
 
-    <div id="register-actions" style="display:none;">
-        <button class="login-btn" style="background: var(--success);" onclick="register()">Create My Account</button>
-        <p style="font-size: 12px; color: var(--text-muted);">Already have one? 
-            <span onclick="toggleAuth(false)" style="color: var(--primary); cursor: pointer; font-weight: 700;">Sign In</span>
-        </p>
-    </div>
-</div>
+        .input-group { text-align: left; margin-bottom: 16px; position: relative; }
+        label { font-size: 11px; font-weight: 800; color: var(--text-main); letter-spacing: 0.05em; }
+        input { width: 100%; padding: 14px 16px; margin-top: 6px; border: 1.5px solid #e2e8f0; border-radius: 14px; background: #fcfcfd; font-size: 15px; box-sizing: border-box; transition: 0.2s; }
+        input:focus { outline: none; border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(67, 56, 202, 0.1); }
 
-<script>
-    // --- NEW AUTHENTICATION FUNCTIONS ---
+        /* Strength Meter */
+        .strength-container { height: 4px; width: 100%; background: #e2e8f0; margin-top: 8px; border-radius: 2px; overflow: hidden; display: none; }
+        #strength-bar { height: 100%; width: 0%; transition: 0.4s ease; }
+        #strength-text { font-size: 10px; font-weight: 700; margin-top: 4px; text-transform: uppercase; display: none; }
 
-    // Switch between Login and Register views
-    function toggleAuth(isRegister) {
-        document.getElementById('auth-title').innerText = isRegister ? "Join Nelson Xchange" : "Nelson Xchange";
-        document.getElementById('login-actions').style.display = isRegister ? "none" : "block";
-        document.getElementById('register-actions').style.display = isRegister ? "block" : "none";
-    }
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 14px; cursor: pointer; font-weight: 700; font-size: 16px; transition: 0.3s; margin-top: 10px; }
+        .btn-primary { background: var(--primary); color: white; }
+        .footer-text { margin-top: 25px; font-size: 13px; color: var(--text-muted); }
+        .link { color: var(--primary); font-weight: 700; cursor: pointer; }
 
-    // Register a new user in Backendless
-    function register() {
-        const email = document.getElementById("email").value;
-        const pass = document.getElementById("password").value;
+        /* Wallet Dashboard */
+        .wallet-card { background: #1e293b; color: white; padding: 24px; border-radius: 24px; text-align: left; margin: 20px 0; border: 1px solid rgba(255,255,255,0.1); }
+        .wallet-card h1 { color: #38bdf8; font-size: 36px; margin: 5px 0 0 0; font-weight: 800; }
+        .tab-container { display: flex; background: #f1f5f9; padding: 4px; border-radius: 16px; gap: 4px; }
+        .tab { flex: 1; padding: 12px; font-size: 11px; font-weight: 800; border: none; border-radius: 12px; cursor: pointer; background: transparent; color: var(--text-muted); }
+        .active-tab { background: #fff; color: var(--primary); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body>
 
-        if (!email || !pass) return alert("Please fill in all fields");
+    <div class="container">
+        <div id="auth-screen" class="box">
+            <div class="logo-circle">NX</div>
+            <h2 id="auth-title">Security Login</h2>
+            <p id="auth-subtitle" class="subtitle">Enter credentials to access OTC terminal</p>
+            
+            <div id="name-field" class="input-group" style="display:none;">
+                <label>FULL NAME</label>
+                <input id="reg-name" type="text" placeholder="John Doe">
+            </div>
 
-        const user = new Backendless.User();
-        user.email = email;
-        user.password = pass;
-        user.balance = 0; // Explicitly set starting balance
+            <div class="input-group">
+                <label>EMAIL ADDRESS</label>
+                <input id="email" type="email" placeholder="name@email.com">
+            </div>
 
-        Backendless.UserService.register(user)
-            .then(res => {
-                alert("Account created successfully! You can now sign in.");
-                toggleAuth(false); // Send them back to login
-            })
-            .catch(err => {
-                alert("Registration Failed: " + err.message);
-            });
-    }
+            <div class="input-group">
+                <label>PASSWORD</label>
+                <input id="password" type="password" placeholder="••••••••" oninput="checkStrength(this.value)">
+                <div class="strength-container" id="strength-container">
+                    <div id="strength-bar"></div>
+                </div>
+                <div id="strength-text"></div>
+            </div>
 
-    // Keep your existing login() function, but ensure it handles the balance correctly
-    function login() {
-        const email = document.getElementById("email").value;
-        const pass = document.getElementById("password").value;
+            <div id="login-actions">
+                <button class="btn btn-primary" onclick="login()">Sign In</button>
+                <p class="footer-text">Don't have an account? <span class="link" onclick="toggleAuth(true)">Register</span></p>
+            </div>
 
-        Backendless.UserService.login(email, pass, true)
-            .then(user => {
-                userEmail = user.email;
-                currentBalance = Number(user.balance || 0);
+            <div id="register-actions" style="display:none;">
+                <button class="btn btn-primary" style="background: var(--success);" onclick="register()">Create Account</button>
+                <p class="footer-text">Already a member? <span class="link" onclick="toggleAuth(false)">Sign In</span></p>
+            </div>
+        </div>
+
+        <div id="dashboard-screen" style="display:none; width: 100%;">
+            <div class="box">
+                <div class="wallet-card">
+                    <p style="margin:0; font-size: 11px; font-weight: 800; opacity: 0.6; letter-spacing: 0.1em;">CURRENT BALANCE</p>
+                    <h1 id="balance-display">$0.00</h1>
+                </div>
+
+                <div class="tab-container">
+                    <button id="tab-trade" class="tab active-tab" onclick="showTab('trade')">TRADE</button>
+                    <button id="tab-payout" class="tab" onclick="showTab('payout')">CASH OUT</button>
+                    <button id="admin-tab-btn" class="tab" onclick="showTab('admin')" style="display:none; color:var(--danger);">ADMIN</button>
+                </div>
+
+                <div id="trade-ui" style="margin-top:20px;">
+                    <input id="asset-name" placeholder="Asset (e.g. BTC)">
+                    <input id="trade-amount" type="number" placeholder="Value in USD">
+                    <button class="btn btn-primary" onclick="submitTrade()">Submit Trade</button>
+                </div>
                 
-                // Admin check remains the same
-                const checkAdmin = user.isAdmin || user.IsAdmin || false;
-                if (checkAdmin === true) {
-                    document.getElementById('admin-tab-btn').style.display = 'block';
-                }
+                <button onclick="location.reload()" style="background:none; border:none; color:var(--danger); font-size:12px; font-weight:700; margin-top:30px; cursor:pointer;">SECURE LOGOUT</button>
+            </div>
+        </div>
+    </div>
 
+    <script>
+        Backendless.initApp("EAE10E02-8554-43FA-A445-17B496B2F52E", "7905FB19-9C35-4313-976B-1AE613B9A276");
+
+        function checkStrength(p) {
+            const meter = document.getElementById('strength-container');
+            const bar = document.getElementById('strength-bar');
+            const text = document.getElementById('strength-text');
+            if(!p) { meter.style.display = 'none'; text.style.display = 'none'; return; }
+            
+            meter.style.display = 'block';
+            text.style.display = 'block';
+            
+            let score = 0;
+            if (p.length > 6) score++;
+            if (p.match(/[A-Z]/)) score++;
+            if (p.match(/[0-9]/)) score++;
+            if (p.match(/[^A-Za-z0-9]/)) score++;
+
+            const colors = [null, '#dc2626', '#d97706', '#059669', '#059669'];
+            const labels = [null, 'Weak', 'Fair', 'Good', 'Strong'];
+            
+            bar.style.width = (score * 25) + '%';
+            bar.style.backgroundColor = colors[score];
+            text.innerText = labels[score];
+            text.style.color = colors[score];
+        }
+
+        function toggleAuth(isRegister) {
+            document.getElementById('auth-title').innerText = isRegister ? "Create Account" : "Security Login";
+            document.getElementById('name-field').style.display = isRegister ? "block" : "none";
+            document.getElementById('login-actions').style.display = isRegister ? "none" : "block";
+            document.getElementById('register-actions').style.display = isRegister ? "block" : "none";
+            document.getElementById('strength-container').style.display = 'none';
+            document.getElementById('strength-text').style.display = 'none';
+        }
+
+        function register() {
+            const name = document.getElementById("reg-name").value;
+            const email = document.getElementById("email").value;
+            const pass = document.getElementById("password").value;
+            if(!name || !email || !pass) return alert("Fill all fields");
+
+            const user = new Backendless.User();
+            user.email = email;
+            user.password = pass;
+            user.name = name;
+            user.balance = 0;
+
+            Backendless.UserService.register(user).then(() => {
+                alert("Account Created! You can now Sign In.");
+                toggleAuth(false);
+            }).catch(err => alert(err.message));
+        }
+
+        function login() {
+            const email = document.getElementById("email").value;
+            const pass = document.getElementById("password").value;
+
+            Backendless.UserService.login(email, pass, true).then(user => {
                 document.getElementById("auth-screen").style.display = "none";
                 document.getElementById("dashboard-screen").style.display = "block";
-                updateBalanceDisplay(currentBalance);
-                refreshHistory();
-            })
-            .catch(err => alert("Login Error: " + err.message));
-    }
-</script>
+                document.getElementById("balance-display").innerText = "$" + (user.balance || 0).toLocaleString();
+                
+                if(user.isAdmin || user.IsAdmin) {
+                    document.getElementById('admin-tab-btn').style.display = "block";
+                }
+            }).catch(err => alert(err.message));
+        }
+
+        function submitTrade() {
+            const asset = document.getElementById("asset-name").value;
+            const amt = Number(document.getElementById("trade-amount").value);
+            Backendless.UserService.getCurrentUser().then(user => {
+                Backendless.Data.of("Trades").save({ asset, amount: amt, status: "Pending", userEmail: user.email, paidOut: false })
+                .then(() => alert("Trade Pending Review!"));
+            });
+        }
+    </script>
+</body>
+</html>

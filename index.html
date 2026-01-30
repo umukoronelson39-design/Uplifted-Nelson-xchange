@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nelson Xchange | OTC Terminal</title>
+    <title>Nelson Xchange | Secure OTC</title>
     <script src="https://api.backendless.com/sdk/js/latest/backendless.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #4338ca; --success: #059669; --danger: #dc2626; --bg: #f8fafc; --text: #1e293b; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         .container { width: 100%; max-width: 440px; padding: 20px; box-sizing: border-box; }
-        .box { background: white; padding: 30px; border-radius: 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; margin-bottom: 20px; }
+        .box { background: white; padding: 30px; border-radius: 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; margin-bottom: 20px; width: 100%; box-sizing: border-box; }
         
         .input-group { text-align: left; margin-bottom: 15px; }
         label { font-size: 11px; font-weight: 800; color: #64748b; letter-spacing: 0.05em; }
-        input { width: 100%; padding: 14px; margin-top: 6px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 15px; box-sizing: border-box; }
+        input, select { width: 100%; padding: 14px; margin-top: 6px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 15px; box-sizing: border-box; }
         
         .btn { width: 100%; padding: 16px; border: none; border-radius: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; }
         .btn-primary { background: var(--primary); color: white; }
@@ -26,9 +26,8 @@
         .tab { flex: 1; padding: 12px; border: none; border-radius: 12px; font-weight: 700; font-size: 11px; cursor: pointer; background: transparent; color: #64748b; text-transform: uppercase; }
         .active-tab { background: white; color: var(--primary); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 
-        /* History Table */
         .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; text-align: left; }
-        .status-badge { font-size: 10px; padding: 4px 8px; border-radius: 6px; font-weight: 800; }
+        .status-badge { font-size: 10px; padding: 4px 8px; border-radius: 6px; font-weight: 800; text-transform: uppercase; }
         .pending { background: #fef3c7; color: #92400e; }
         .completed { background: #d1fae5; color: #065f46; }
     </style>
@@ -70,6 +69,7 @@
 
                 <div class="tab-bar">
                     <button id="t-trade" class="tab active-tab" onclick="switchTab('trade')">Trade</button>
+                    <button id="t-payout" class="tab" onclick="switchTab('payout')">Payout</button>
                     <button id="t-history" class="tab" onclick="switchTab('history')">History</button>
                     <button id="t-admin" class="tab" onclick="switchTab('admin')" style="display:none; color:var(--danger);">Admin</button>
                 </div>
@@ -80,13 +80,19 @@
                     <button class="btn btn-primary" onclick="submitTrade()">Submit Review</button>
                 </div>
 
+                <div id="ui-payout" style="display:none;">
+                    <select id="payout-method"><option value="Crypto">Crypto</option><option value="Bank">Bank</option></select>
+                    <input id="payout-amt" type="number" placeholder="Amount">
+                    <input id="payout-dest" type="text" placeholder="Wallet Address">
+                    <button class="btn btn-primary" onclick="submitPayout()">Request Payout</button>
+                </div>
+
                 <div id="ui-history" style="display:none;">
-                    <h4 style="text-align:left; margin-bottom:10px;">Recent Activity</h4>
                     <div id="history-list"></div>
                 </div>
 
                 <div id="ui-admin" style="display:none; text-align:left;">
-                    <h4 style="color:var(--danger);">Pending Trades</h4>
+                    <h4 style="color:var(--danger);">Pending Actions</h4>
                     <div id="admin-list"></div>
                 </div>
 
@@ -132,32 +138,36 @@
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
             document.getElementById('bal-display').innerText = "$" + (user.balance || 0).toLocaleString();
+            document.getElementById('welcome-msg').innerHTML = `Hello, <b>${user.name || "User"}</b>`;
             
-            const welcome = document.getElementById('welcome-msg');
-            const name = user.name || "User";
-            
-            // Strict Admin Check
-            if(user.isAdmin === true) {
-                welcome.innerHTML = `Welcome back, <b style="color:var(--danger);">Admin ${name}</b>`;
-                document.getElementById('t-admin').style.display = 'block';
-            } else {
-                welcome.innerHTML = `Hello, <b>${name}</b>`;
-                document.getElementById('t-admin').style.display = 'none';
-            }
+            if(user.isAdmin === true) document.getElementById('t-admin').style.display = 'block';
             loadHistory();
         }
 
         function switchTab(t) {
-            const tabs = ['ui-trade', 'ui-history', 'ui-admin'];
-            tabs.forEach(id => document.getElementById(id).style.display = 'none');
+            const uis = ['ui-trade', 'ui-history', 'ui-admin', 'ui-payout'];
+            uis.forEach(id => document.getElementById(id).style.display = 'none');
             document.getElementById('ui-' + t).style.display = 'block';
             
-            document.getElementById('t-trade').className = t === 'trade' ? 'tab active-tab' : 'tab';
-            document.getElementById('t-history').className = t === 'history' ? 'tab active-tab' : 'tab';
-            document.getElementById('t-admin').className = t === 'admin' ? 'tab active-tab' : 'tab';
+            ['t-trade', 't-history', 't-admin', 't-payout'].forEach(id => document.getElementById(id).className = 'tab');
+            document.getElementById('t-' + t).className = 'tab active-tab';
             
             if(t === 'history') loadHistory();
             if(t === 'admin') loadAdmin();
+        }
+
+        async function submitTrade() {
+            const user = await Backendless.UserService.getCurrentUser();
+            const data = { asset: document.getElementById('asset').value, amount: Number(document.getElementById('amt').value), status: "Pending", userEmail: user.email };
+            Backendless.Data.of("Trades").save(data).then(() => { alert("Sent!"); switchTab('history'); });
+        }
+
+        async function submitPayout() {
+            const user = await Backendless.UserService.getCurrentUser();
+            const amt = Number(document.getElementById('payout-amt').value);
+            if(amt > user.balance) return alert("Insufficient Balance");
+            const data = { amount: amt, destination: document.getElementById('payout-dest').value, status: "Pending", userEmail: user.email, type: "Payout" };
+            Backendless.Data.of("Payouts").save(data).then(() => { alert("Payout Requested!"); switchTab('history'); });
         }
 
         function loadHistory() {
@@ -165,26 +175,11 @@
                 const query = Backendless.DataQueryBuilder.create().setWhereClause(`userEmail = '${user.email}'`);
                 Backendless.Data.of("Trades").find(query).then(trades => {
                     const list = document.getElementById('history-list');
-                    list.innerHTML = trades.length ? "" : "<p style='font-size:12px;'>No activity yet.</p>";
+                    list.innerHTML = trades.length ? "" : "No activity.";
                     trades.forEach(t => {
-                        const statusClass = t.status === 'Completed' ? 'completed' : 'pending';
-                        list.innerHTML += `<div class="history-item">
-                            <div><b>${t.asset}</b><br><small style="color:gray;">$${t.amount}</small></div>
-                            <div class="status-badge ${statusClass}">${t.status}</div>
-                        </div>`;
+                        list.innerHTML += `<div class="history-item"><div><b>${t.asset}</b><br>$${t.amount}</div><div class="status-badge ${t.status.toLowerCase()}">${t.status}</div></div>`;
                     });
                 });
-            });
-        }
-
-        function submitTrade() {
-            const user = Backendless.UserService.getCurrentUser().then(user => {
-                const data = { 
-                    asset: document.getElementById('asset').value, 
-                    amount: Number(document.getElementById('amt').value),
-                    status: "Pending", userEmail: user.email
-                };
-                Backendless.Data.of("Trades").save(data).then(() => { alert("Trade Sent!"); switchTab('history'); });
             });
         }
 
@@ -192,21 +187,18 @@
             const query = Backendless.DataQueryBuilder.create().setWhereClause("status = 'Pending'");
             Backendless.Data.of("Trades").find(query).then(trades => {
                 const list = document.getElementById('admin-list');
-                list.innerHTML = trades.length ? "" : "<p style='font-size:12px;'>All clear!</p>";
+                list.innerHTML = trades.length ? "" : "All clear.";
                 trades.forEach(t => {
-                    list.innerHTML += `<div style="background:#f8fafc; padding:15px; border-radius:12px; margin-bottom:10px; font-size:12px;">
-                        <b>${t.userEmail}</b><br>${t.asset}: $${t.amount}<br>
-                        <button onclick="approve('${t.objectId}')" style="background:var(--success); color:white; border:none; padding:5px 10px; border-radius:6px; margin-top:8px;">Approve</button>
-                    </div>`;
+                    list.innerHTML += `<div style="background:#f8fafc; padding:10px; margin-bottom:5px; font-size:12px;">${t.userEmail} | $${t.amount}<br><button onclick="approve('${t.objectId}')">Approve</button></div>`;
                 });
             });
         }
 
-        function approve(id) {
-            Backendless.Data.of("Trades").findById(id).then(t => {
-                t.status = "Completed";
-                Backendless.Data.of("Trades").save(t).then(() => { alert("Approved!"); loadAdmin(); });
-            });
+        async function approve(id) {
+            const t = await Backendless.Data.of("Trades").findById(id);
+            t.status = "Completed";
+            await Backendless.Data.of("Trades").save(t);
+            alert("Approved!"); loadAdmin();
         }
 
         function logout() { Backendless.UserService.logout().then(() => location.reload()); }
